@@ -1,0 +1,122 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}" />
+</head>
+<body>
+  <main>
+    <form method="POST" action="{% url 'signup' %}" id="signup-form">
+      {% csrf_token %}
+
+      <div class="logo-row">
+        <div class="logo-mark">PM</div>
+        <div class="logo-text">Portfolio Marker</div>
+      </div>
+
+      <div class="accent-bar"></div>
+      <h3>Create account</h3>
+
+      {% if error %}
+        <p class="error">{{ error }}</p>
+      {% endif %}
+
+      <p class="subtitle">Join us today</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-circle active" id="circle-1">1</div>
+          <div class="step-label active" id="label-1">Your details</div>
+        </div>
+        <div class="step-line" id="line-1"></div>
+        <div class="step">
+          <div class="step-circle" id="circle-2">2</div>
+          <div class="step-label" id="label-2">Password</div>
+        </div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="step-panel active" id="panel-1">
+        <label>
+          <span>Exam Number</span>
+          <input type="text" name="exam_num" id="id_exam_num" placeholder="Enter your exam number" />
+        </label>
+        <label>
+          <span>First Name</span>
+          <input type="text" name="name" id="id_name" placeholder="Enter your first name" />
+        </label>
+        <label>
+          <span>Surname</span>
+          <input type="text" name="surname" id="id_surname" placeholder="Enter your surname" />
+        </label>
+        <div class="button-wrap">
+          <button type="button" class="button" onclick="goToStep2()">Next</button>
+          <div class="divider">or</div>
+          <a href="{% url 'google_login' %}" class="button-google">
+            <img src="{% static 'images/google_icon.svg' %}" alt="Google Icon" width="20" height="20"/>
+            Continue with Google
+          </a>
+          <a href="{% url 'login' %}" class="button button-outline">Log In</a>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-panel" id="panel-2">
+        <label>
+          <span>Password</span>
+          <div class="passwd-wrap">
+            <input type="password" name="password1" id="id_password" placeholder="Enter your password..." required />
+            <button type="button" class="show-passwd" id="show-passwd-1">
+              <img src="{% static 'images/eye_open.svg' %}" alt="Show Password" />
+            </button>
+          </div>
+        </label>
+        <label>
+          <span>Confirm Password</span>
+          <div class="passwd-wrap">
+            <input type="password" name="password2" id="id_confirm_password" placeholder="Confirm your password..." required />
+            <button type="button" class="show-passwd" id="show-passwd-2">
+              <img src="{% static 'images/eye_open.svg' %}" alt="Show Password" />
+            </button>
+          </div>
+        </label>
+        <div class="button-wrap">
+          <button type="submit" class="button">Create account</button>
+          <button type="button" class="button button-outline" onclick="goToStep1()">Back</button>
+        </div>
+      </div>
+
+    </form>
+  </main>
+  <script src="{% static 'main.js' %}"></script>
+  <script>
+    function goToStep2() {
+      const examNum = document.getElementById('id_exam_num').value.trim();
+      const name = document.getElementById('id_name').value.trim();
+      const surname = document.getElementById('id_surname').value.trim();
+      if (!examNum || !name || !surname) {
+        alert('Please fill in all fields before continuing.');
+        return;
+      }
+      document.getElementById('panel-1').classList.remove('active');
+      document.getElementById('panel-2').classList.add('active');
+      document.getElementById('circle-1').classList.add('done');
+      document.getElementById('circle-2').classList.add('active');
+      document.getElementById('label-2').classList.add('active');
+      document.getElementById('line-1').classList.add('done');
+    }
+
+    function goToStep1() {
+      document.getElementById('panel-2').classList.remove('active');
+      document.getElementById('panel-1').classList.add('active');
+      document.getElementById('circle-2').classList.remove('active');
+      document.getElementById('label-2').classList.remove('active');
+      document.getElementById('line-1').classList.remove('done');
+    }
+  </script>
+</body>
+</html>

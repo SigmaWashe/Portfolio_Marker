@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Profile</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}" />
+</head>
+<body>
+  <main>
+    <form method="POST" action="{% url 'complete_profile' %}">
+      {% csrf_token %}
+
+      <div class="logo-row">
+        <div class="logo-mark">PM</div>
+        <div class="logo-text">Portfolio Marker</div>
+      </div>
+
+      <div class="accent-bar"></div>
+      <h3>One more step</h3>
+
+      {% if error %}
+        <p class="error">{{ error }}</p>
+      {% endif %}
+
+      <p class="subtitle">We just need a few more details to set up your account.</p>
+
+      <label>
+        <span>Exam Number</span>
+        <input type="text" name="exam_number" placeholder="Enter your exam number" required />
+      </label>
+
+      <label>
+        <span>First Name</span>
+        <input type="text" name="name" value="{{ request.user.first_name }}" placeholder="Enter your first name" required />
+      </label>
+
+      <label>
+        <span>Surname</span>
+        <input type="text" name="surname" value="{{ request.user.last_name }}" placeholder="Enter your surname" required />
+      </label>
+
+      <div class="button-wrap">
+        <button type="submit" class="button">Finish setup</button>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

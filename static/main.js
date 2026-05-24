@@ -8,8 +8,8 @@ function setupToggle(btnId, fieldId) {
   btn.addEventListener('click', () => {
     field.type = field.type === 'password' ? 'text' : 'password'
     icon.src = icon.src.includes('open')
-      ? icon.src.replace('eye_open.svg', 'eye_closed.svg')
-      : icon.src.replace('eye_closed.svg', 'eye_open.svg')
+      ? icon.src.replace('images/eye_open.svg', 'images/eye_closed.svg')
+      : icon.src.replace('images/eye_closed.svg', 'images/eye_open.svg')
   })
 }
 

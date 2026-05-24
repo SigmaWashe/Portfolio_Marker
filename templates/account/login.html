@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}" />
+</head>
+<body>
+  <main>
+    <form method="POST" action="{% url 'login' %}">
+      {% csrf_token %}
+
+      <div class="logo-row">
+        <div class="logo-mark">PM</div>
+        <div class="logo-text">Portfolio Marker</div>
+      </div>
+
+      <div class="accent-bar"></div>
+      <h3>Welcome back</h3>
+
+      {% if form.errors %}
+        <p class="error">Invalid exam number or password.</p>
+      {% endif %}
+
+      <p class="subtitle">Sign in to your account</p>
+
+      <label>
+        <span>Exam Number</span>
+        <input type="text" id="exam_number" name="username" placeholder="Enter your exam number" />
+      </label>
+
+      <label>
+        <span>Password</span>
+        <div class="passwd-wrap">
+          <input type="password" name="password" id="id_password" placeholder="Enter your password..." required />
+          <button type="button" class="show-passwd" id="show-passwd-1">
+            <img src="{% static 'images/eye_open.svg' %}" alt="Show Password" />
+          </button>
+        </div>
+      </label>
+
+      <div class="button-wrap">
+        <button class="button" type="submit">Log in</button>
+        <div class="divider">or</div>
+        <a href="{% url 'google_login' %}" class="button-google">
+          <img src="{% static 'images/google_icon.svg' %}" alt="Google Icon" width="20" height="20"/>
+          Continue with Google
+        </a>
+        <a href="{% url 'signup' %}" class="button button-outline">Sign up</a>
+      </div>
+    </form>
+  </main>
+  <script src="{% static 'main.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  background-color: #FAFAF9;
+  color: #1C1917;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+main {
+  width: 100%;
+  padding: 1rem;
+}
+
+form {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 1rem;
+  padding: 2rem;
+  border: 0.5px solid #E7E5E4;
+}
+
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1.25rem;
+}
+
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #1E3A5F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.logo-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1C1917;
+}
+
+.accent-bar {
+  width: 36px;
+  height: 3px;
+  background: #1E3A5F;
+  border-radius: 2px;
+  margin-bottom: 1rem;
+}
+
+h3 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: #1C1917;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: #78716C;
+  margin-bottom: 1.75rem;
+}
+
+.error {
+  font-size: 0.85rem;
+  color: #b13535;
+  background: #faeaea;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 1.1rem;
+}
+
+label span {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #57534E;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: color 0.2s ease;
+}
+
+label:focus-within span {
+  color: #1E3A5F;
+}
+
+input, button {
+  appearance: none;
+  outline: none;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 2.75rem 0.65rem 0.9rem;
+  border: 1.5px solid #C8C5C2;
+  border-radius: 0.6rem;
+  font-size: 0.95rem;
+  color: #1C1917;
+  background: #fff;
+  transition: border-color 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
+  border-color: #1E3A5F;
+}
+
+.passwd-wrap {
+  position: relative;
+  display: block;
+}
+
+.show-passwd {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  cursor: pointer;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.show-passwd:hover {
+  opacity: 1;
+}
+
+.show-passwd img {
+  width: 100%;
+  height: auto;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: #A8A29E;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #E7E5E4;
+}
+
+.button-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.button {
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  background-color: #1E3A5F;
+  color: #fff;
+  border-radius: 0.6rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  display: block;
+}
+
+.button:hover {
+  background-color: #162D4A;
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+.button-outline {
+  background-color: transparent;
+  color: #57534E;
+  border: 1.5px solid #D6D3D1;
+}
+
+.button-outline:hover {
+  border-color: #1E3A5F;
+  color: #1E3A5F;
+  background-color: #EEF2F7;
+}
+
+.button-google {
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  background-color: #fff;
+  color: #1C1917;
+  border: 1.5px solid #C8C5C2;
+  border-radius: 0.6rem;
+  padding: 0.72rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.button-google:hover {
+  border-color: #A8A29E;
+  background-color: #FAFAF9;
+}
+
+.button-google svg {
+  flex-shrink: 0;
+}
+
+/* Multi-step form */
+.steps {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.75rem;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #D6D3D1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #A8A29E;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.step-circle.active,
+.step-circle.done {
+  border-color: #1E3A5F;
+  background: #1E3A5F;
+  color: #fff;
+}
+
+.step-label {
+  font-size: 12px;
+  color: #A8A29E;
+  font-weight: 500;
+}
+
+.step-label.active {
+  color: #1E3A5F;
+  font-weight: 600;
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: #E7E5E4;
+  margin: 0 8px;
+  transition: background 0.3s;
+}
+
+.step-line.done {
+  background: #1E3A5F;
+}
+
+.step-panel {
+  display: none;
+}
+
+.step-panel.active {
+  display: block;
+}

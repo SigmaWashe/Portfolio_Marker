@@ -1,0 +1,238 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Subjects</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}" />
+  <style>
+    .subject-selector {
+      display: flex;
+      gap: 0.65rem;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .subject-selector select {
+      flex: 1;
+      padding: 0.65rem 0.9rem;
+      border: 1.5px solid #C8C5C2;
+      border-radius: 0.6rem;
+      font-size: 0.9rem;
+      color: #1C1917;
+      background: #fff;
+      font-family: inherit;
+      appearance: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .subject-selector select:focus {
+      border-color: #1E3A5F;
+    }
+
+    .btn-add {
+      padding: 0.65rem 1.1rem;
+      background: #1E3A5F;
+      color: #fff;
+      border: none;
+      border-radius: 0.6rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+
+    .btn-add:hover { background: #162D4A; }
+
+    .selected-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      min-height: 48px;
+    }
+
+    .selected-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0.9rem;
+      background: #EEF2F7;
+      border: 1.5px solid #1E3A5F;
+      border-radius: 0.6rem;
+      font-size: 0.875rem;
+      color: #1C1917;
+      font-weight: 500;
+    }
+
+    .btn-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #b13535;
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1;
+      padding: 0 0.25rem;
+      font-family: inherit;
+      transition: color 0.2s;
+    }
+
+    .btn-remove:hover { color: #8b1a1a; }
+
+    .empty-note {
+      font-size: 0.8rem;
+      color: #A8A29E;
+      padding: 0.5rem 0;
+    }
+
+    .count-note {
+      font-size: 0.8rem;
+      color: #57534E;
+      margin-bottom: 1rem;
+    }
+
+    .count-note span {
+      font-weight: 600;
+      color: #1E3A5F;
+    }
+
+    .error-inline {
+      font-size: 0.8rem;
+      color: #b13535;
+      margin-top: 0.35rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <form method="POST" action="{% url 'select_subjects' %}" id="subjects-form">
+      {% csrf_token %}
+
+      <div class="logo-row">
+        <div class="logo-mark">PM</div>
+        <div class="logo-text">Portfolio Marker</div>
+      </div>
+
+      <div class="accent-bar"></div>
+      <h3>Your subjects</h3>
+
+      {% if error %}
+        <p class="error">{{ error }}</p>
+      {% endif %}
+
+      <p class="subtitle">Select the subjects you are doing this year.</p>
+
+      <div class="count-note">
+        <span id="count">0</span> subject(s) selected &mdash; minimum 3 required
+      </div>
+
+      <!-- Dropdown + Add button -->
+      <div class="subject-selector">
+        <select id="subject-dropdown">
+          <option value="">-- Select a subject --</option>
+          {% for subject in subjects %}
+            <option value="{{ subject.id }}" data-name="{{ subject.subject }}">
+              {{ subject.subject }}
+            </option>
+          {% endfor %}
+        </select>
+        <button type="button" class="btn-add" onclick="addSubject()">Add</button>
+      </div>
+      <div class="error-inline" id="duplicate-error">You have already added this subject.</div>
+
+      <!-- Selected subjects list -->
+      <div class="selected-list" id="selected-list">
+        <p class="empty-note" id="empty-note">No subjects added yet.</p>
+      </div>
+
+      <!-- Hidden inputs submitted with form -->
+      <div id="hidden-inputs"></div>
+
+      <div class="button-wrap">
+        <button type="submit" class="button" onclick="return validateForm()">Continue to dashboard</button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const selected = {}; // { id: name }
+
+    function addSubject() {
+      const dropdown = document.getElementById('subject-dropdown');
+      const id = dropdown.value;
+      const name = dropdown.options[dropdown.selectedIndex].dataset.name;
+      const error = document.getElementById('duplicate-error');
+
+      if (!id) return;
+
+      if (selected[id]) {
+        error.style.display = 'block';
+        setTimeout(() => error.style.display = 'none', 2000);
+        return;
+      }
+
+      error.style.display = 'none';
+      selected[id] = name;
+      dropdown.value = '';
+      renderList();
+    }
+
+    function removeSubject(id) {
+      delete selected[id];
+      renderList();
+    }
+
+    function renderList() {
+      const list = document.getElementById('selected-list');
+      const hiddenInputs = document.getElementById('hidden-inputs');
+      const emptyNote = document.getElementById('empty-note');
+      const count = document.getElementById('count');
+
+      // Clear
+      list.innerHTML = '';
+      hiddenInputs.innerHTML = '';
+
+      const ids = Object.keys(selected);
+      count.textContent = ids.length;
+
+      if (ids.length === 0) {
+        list.innerHTML = '<p class="empty-note">No subjects added yet.</p>';
+        return;
+      }
+
+      ids.forEach(id => {
+        // List item
+        const item = document.createElement('div');
+        item.className = 'selected-item';
+        item.innerHTML = `
+          <span>${selected[id]}</span>
+          <button type="button" class="btn-remove" onclick="removeSubject('${id}')" title="Remove">&times;</button>
+        `;
+        list.appendChild(item);
+
+        // Hidden input
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'subjects';
+        input.value = id;
+        hiddenInputs.appendChild(input);
+      });
+    }
+
+    function validateForm() {
+      const ids = Object.keys(selected);
+      if (ids.length < 3) {
+        alert('Please select at least 3 subjects before continuing.');
+        return false;
+      }
+      return true;
+    }
+  </script>
+</body>
+</html>

@@ -1,5 +1,19 @@
 SYMBOL_THRESHOLDS = [30, 40, 50, 60, 70, 80]
 
+class SubjectID:
+    EngHL = 1
+    OtherHL = 2
+    FAL = 3
+    Mathematics = 4
+    LifeOrientation = 5
+    Business = 6
+    ComputerApplicationsTechnology = 7
+    Geography = 8
+    History = 9
+    InformationTechnology = 10
+    LifeSciences = 11
+    PhysicalSciences = 12
+
 # -----------------------------------------------------------------------------
 # English Home Language  — test_IDs
 # -----------------------------------------------------------------------------
