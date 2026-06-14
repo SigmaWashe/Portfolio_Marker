@@ -5,6 +5,7 @@ function setupToggle(btnId, fieldId) {
   const icon = btn.querySelector('img')
   const field = document.querySelector('#' + fieldId)
 
+
   btn.addEventListener('click', () => {
     field.type = field.type === 'password' ? 'text' : 'password'
     icon.src = icon.src.includes('open')
@@ -13,8 +14,10 @@ function setupToggle(btnId, fieldId) {
   })
 }
 
+
 const loginBtn = document.querySelector('#show-passwd')
 if (loginBtn) setupToggle('show-passwd', 'password')
+
 
 const signupBtn1 = document.querySelector('#show-passwd-1')
 if (signupBtn1) {
@@ -22,130 +25,99 @@ if (signupBtn1) {
   setupToggle('show-passwd-2', 'id_confirm_password')
 }
 
-// ── Task management ──
-const taskDataEls = document.querySelectorAll('.task-data')
-const taskSearchEl = document.getElementById('task-search')
 
-const allTasks = Array.from(taskDataEls).map(el => ({
-  id: el.dataset.id,
-  name: el.dataset.name,
-  subject: el.dataset.subject,
-  date: el.dataset.date,
-  time: el.dataset.time,
-  priority: el.dataset.priority,
-  status: el.dataset.status,
-}))
+lucide.createIcons();
 
-console.log('taskSearchEl:', taskSearchEl)
-console.log('allTasks:', allTasks)
-
-function filterTasks() {
-  if (!taskSearchEl) return;
-
-  const input = taskSearchEl.value.trim().toLowerCase();
-  const dropdown = document.getElementById('task-dropdown');
-  const deleteWrap = document.getElementById('delete-wrap');
-
-  taskSearchEl.style.borderColor = '#ddd';
-
-  if (!input) {
-    dropdown.style.display = 'none';
-    dropdown.innerHTML = '<option value="">-- Select a task --</option>';
-    if (deleteWrap) deleteWrap.style.display = 'none';
-    resetForm();
-    return;
-  }
-
-  const matches = allTasks.filter(t =>
-    (t.name || '').toLowerCase().includes(input) ||
-    (t.subject || '').toLowerCase().includes(input)
-  );
-
-  if (matches.length === 0) {
-    dropdown.style.display = 'none';
-    taskSearchEl.style.borderColor = 'crimson';
-    return;
-  }
-
-  dropdown.innerHTML = `<option value="">-- Matches found (${matches.length}) --</option>`;
-  matches.forEach(t => {
-    const opt = document.createElement('option');
-    opt.value = t.id;
-    opt.textContent = `${t.name} — ${t.subject}`;
-    dropdown.appendChild(opt);
-  });
-
-  dropdown.style.display = 'block';
-
-  // Auto-select first match
-  dropdown.value = matches[0].id;
-  selectTask(matches[0].id);
-}
-
-// Add this listener so the form fills when a dropdown item is picked
-const taskDropdown = document.getElementById('task-dropdown');
-if (taskDropdown) {
-  taskDropdown.addEventListener('change', (e) => {
-    if (e.target.value) {
-      selectTask(e.target.value);
+function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('retracted');
+      localStorage.setItem('sidebarRetracted', sidebar.classList.contains('retracted'));
     }
-  });
+
+
+document.addEventListener("DOMContentLoaded", () => {
+      if (localStorage.getItem('sidebarRetracted') === 'true') {
+        document.querySelector('.sidebar').classList.add('retracted');
+      }
+    });
+
+
+function switchTab(name, el) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      el.classList.add('active');
+    }
+
+function toggleReport(btn) {
+  const panel = document.getElementById('report-preview');
+  const frame = document.getElementById('pdf-frame');
+  const isHidden = panel.style.display === 'none' || panel.style.display === '';
+
+  if (isHidden) {
+    panel.style.display = 'block';
+    btn.innerHTML = '<i data-lucide="eye-off" width="16" height="16" style="vertical-align:middle;margin-right:6px;"></i>Hide Preview';
+    // Lazy-load: only set src the first time
+    if (!frame.src || frame.src === window.location.href) {
+      document.getElementById('pdf-loading').style.display = 'inline';
+      frame.src = frame.dataset.src;
+    }
+  } else {
+    panel.style.display = 'none';
+    btn.innerHTML = '<i data-lucide="eye" width="16" height="16" style="vertical-align:middle;margin-right:6px;"></i>Preview Report';
+  }
+  lucide.createIcons();
 }
 
 
-function selectTask(id) {
-  if (!id) return
-  const task = allTasks.find(t => t.id === id)
-  if (!task) return
+function previewDocx(btn) {
+    const container = document.getElementById('docx-preview-container');
+    container.style.display = "block";
+    container.innerHTML = "<p style='color:#78716C; font-style:italic;'>Processing document text formatting...</p>";
 
-  const formTitle = document.getElementById('form-title')
-  const taskId = document.getElementById('task-id')
-  if (formTitle) formTitle.innerText = "✎ Edit Task"
-  if (taskId) taskId.value = task.id
-  if (document.getElementById('f-name')) document.getElementById('f-name').value = task.name
-  if (document.getElementById('f-subject')) document.getElementById('f-subject').value = task.subject
-  if (document.getElementById('f-date')) document.getElementById('f-date').value = task.date
-  if (document.getElementById('f-time')) document.getElementById('f-time').value = task.time
-  if (document.getElementById('f-priority')) document.getElementById('f-priority').value = task.priority
-  if (document.getElementById('f-status')) document.getElementById('f-status').value = task.status
-  if (document.getElementById('submit-btn')) document.getElementById('submit-btn').innerText = "Update Task"
-  if (document.getElementById('delete-task-id')) document.getElementById('delete-task-id').value = task.id
-  if (document.getElementById('delete-wrap')) document.getElementById('delete-wrap').style.display = 'block'
+    const reportUrl = btn.dataset.url;
 
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+    fetch(reportUrl)
+        .then(response => {
+            if (!response.ok) throw new Error("Could not fetch report.");
+            return response.arrayBuffer();
+        })
+        .then(arrayBuffer => {
+            return mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+        })
+        .then(result => {
+            container.innerHTML = result.value;
+            if (result.messages.length > 0) {
+                console.log("Mammoth warnings:", result.messages);
+            }
+            // Show the Print button now that preview is loaded
+            document.getElementById('print-report-btn').style.display = 'inline-flex';
+        })
+        .catch(error => {
+            console.error("Preview error:", error);
+            container.innerHTML = "<p style='color:#b13535;'>Failed to load document preview.</p>";
+        });
 }
 
-function resetForm() {
-  const formTitle = document.getElementById('form-title')
-  const taskForm = document.getElementById('task-form')
-  const submitBtn = document.getElementById('submit-btn')
-  const deleteWrap = document.getElementById('delete-wrap')
-  const dropdown = document.getElementById('task-dropdown')
-  const taskSearch = document.getElementById('task-search')
-  const taskId = document.getElementById('task-id')
-
-  if (formTitle) formTitle.innerText = "＋ Add New Task"
-  if (taskForm) taskForm.reset()
-  if (submitBtn) submitBtn.innerText = "Save Task"
-  if (deleteWrap) deleteWrap.style.display = 'none'
-  if (dropdown) dropdown.style.display = 'none'
-  if (taskSearch) taskSearch.value = ''
-  if (taskId) taskId.value = ''
-}
-
-// ── Homework filter ──
-function filterHomework() {
-  const val = document.getElementById('hw-filter').value
-  document.querySelectorAll('#hw-body tr').forEach(tr => {
-    if (val === 'All') { tr.style.display = ''; return }
-    tr.style.display = (tr.dataset.when === val.toLowerCase()) ? '' : 'none'
-  })
-}
-
-// ── Enter key triggers search ──
-if (taskSearchEl) {
-  taskSearchEl.addEventListener('input', filterTasks);
-  taskSearchEl.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') e.preventDefault()
-  })
+function printDocx() {
+    const content = document.getElementById('docx-preview-container').innerHTML;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>SBA Report</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 2cm; font-size: 11pt; }
+                table { border-collapse: collapse; width: 100%; }
+                td, th { border: 1px solid #ccc; padding: 4px 8px; }
+                @media print { body { margin: 1.5cm; } }
+            </style>
+        </head>
+        <body>${content}</body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
 }

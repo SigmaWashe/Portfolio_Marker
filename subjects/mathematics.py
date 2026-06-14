@@ -1,109 +1,73 @@
-from dataclasses import dataclass
+from core.calculator import round_decimal, assign_symbol
+from core.constants import Mathematics
+from core.utils import get_center_number
 
-from core.calculator import round_decimal, calculate_percentage, assign_symbol
-from core.constants import MathematicsTest, MathematicsWeight
 
-@dataclass
-class Mathematics:
-    _short_item1_desc: str
-    _short_item1_mark: float
-    _short_item1_total: int
+def build_data(g):
+    short1_perc = g._perc(Mathematics.SHORT_ITEM, 0)
+    short2_perc = g._perc(Mathematics.SHORT_ITEM, 1)
+    long_perc   = g._perc(Mathematics.LONG_ITEM)
+    test1_perc  = g._perc(Mathematics.TEST, 0)
+    test2_perc  = g._perc(Mathematics.TEST, 1)
+    test3_perc  = g._perc(Mathematics.TEST, 2)
+    p1_perc     = g._perc(Mathematics.PRELIM_PAPER_1)
+    p2_perc     = g._perc(Mathematics.PRELIM_PAPER_2)
 
-    _short_item2_desc: str
-    _short_item2_mark: float
-    _short_item2_total: int
+    short_weight  = round_decimal(g._weighted(Mathematics.SHORT_ITEM, 0) + g._weighted(Mathematics.SHORT_ITEM, 1), 1)
+    long_weight   = g._weighted(Mathematics.LONG_ITEM)
+    test_weight   = round_decimal(g._weighted(Mathematics.TEST, 0) + g._weighted(Mathematics.TEST, 1) + g._weighted(Mathematics.TEST, 2), 1)
+    prelim_weight = round_decimal(g._weighted(Mathematics.PRELIM_PAPER_1) + g._weighted(Mathematics.PRELIM_PAPER_2), 1)
 
-    _long_item_desc: str
-    _long_item_mark: float
-    _long_item_total: int
+    short_wins = short_weight >= long_weight
+    total = round_decimal((short_weight if short_wins else long_weight) + test_weight + prelim_weight, 1)
 
-    _test1_desc: str
-    _test1_mark: float
-    _test1_total: int
+    exam = str(g.student.exam_num).zfill(13)
 
-    _test2_desc: str
-    _test2_mark: float
-    _test2_total: int
+    data = {
+        "{NAME}": g.student.name, "{SURNAME}": g.student.surname,
+        "{1}": exam[0],  "{2}": exam[1],  "{3}": exam[2],  "{4}": exam[3],
+        "{5}": exam[4],  "{6}": exam[5],  "{7}": exam[6],  "{8}": exam[7],
+        "{9}": exam[8],  "{10}": exam[9], "{11}": exam[10], "{12}": exam[11], "{13}": exam[12],
 
-    _test3_desc: str
-    _test3_mark: float
-    _test3_total: int
+        "{short1_topic}": g._desc(Mathematics.SHORT_ITEM, 0), "{short1_mark}": g._mark(Mathematics.SHORT_ITEM, 0),
+        "{short1_total}": g._total(Mathematics.SHORT_ITEM, 0), "{short1_perc}": short1_perc,
 
-    _prelim1_mark: float
-    _prelim1_total: int
-    _prelim2_mark: float
-    _prelim2_total: int
+        "{short2_topic}": g._desc(Mathematics.SHORT_ITEM, 1), "{short2_mark}": g._mark(Mathematics.SHORT_ITEM, 1),
+        "{short2_total}": g._total(Mathematics.SHORT_ITEM, 1), "{short2_perc}": short2_perc,
 
-    def markbreakdown(self):
-        short1_perc = calculate_percentage(self._short_item1_mark, self._short_item1_total)
-        short2_perc = calculate_percentage(self._short_item2_mark, self._short_item2_total)
-        long_perc = calculate_percentage(self._long_item_mark, self._long_item_total)
+        "{short_weight}": short_weight,
 
-        test1_perc = calculate_percentage(self._test1_mark, self._test1_total)
-        test2_perc = calculate_percentage(self._test2_mark, self._test2_total)
-        test3_perc = calculate_percentage(self._test3_mark, self._test3_total)
+        "{long_topic}": g._desc(Mathematics.LONG_ITEM), "{long_mark}": g._mark(Mathematics.LONG_ITEM),
+        "{long_total}": g._total(Mathematics.LONG_ITEM), "{long_perc}": long_perc,
 
-        prelim1_perc = calculate_percentage(self._prelim1_mark, 150)
-        prelim2_perc = calculate_percentage(self._prelim2_mark, 150)
+        "{long_weight}": long_weight,
 
-        short_final = round_decimal((short1_perc * 0.15) + (short2_perc * 0.15), 1)
-        long_final = round_decimal(long_perc * 0.3, 1)
-        test_final = round_decimal((test1_perc * 0.1) + (test2_perc * 0.1) + (test3_perc * 0.1), 1)
-        prelim1_final = round_decimal((prelim1_perc * 0.2), 1)
-        prelim2_final = round_decimal((prelim2_perc * 0.2), 1)
+        "{test1_topic}": g._desc(Mathematics.TEST, 0), "{test1_mark}": g._mark(Mathematics.TEST, 0),
+        "{test1_total}": g._total(Mathematics.TEST, 0), "{test1_perc}": test1_perc,
 
-        final_sba = test_final + prelim1_final + prelim2_final
-        if short_final > long_final:
-            final_sba += short_final
-        else:
-            final_sba += long_final
+        "{test2_topic}": g._desc(Mathematics.TEST, 1), "{test2_mark}": g._mark(Mathematics.TEST, 1),
+        "{test2_total}": g._total(Mathematics.TEST, 1), "{test2_perc}": test2_perc,
 
-        final_perc = round_decimal(final_sba, 1)
-        final_symbol = assign_symbol(final_perc)
+        "{test3_topic}": g._desc(Mathematics.TEST, 2), "{test3_mark}": g._mark(Mathematics.TEST, 2),
+        "{test3_total}": g._total(Mathematics.TEST, 2), "{test3_perc}": test3_perc,
 
-        return {
-            "short_item": {
-                1: {"description": self._short_item1_desc, "mark": round_decimal(self._short_item1_mark, 1),
-                    "total": int(self._short_item1_total), "percentage": round_decimal(short1_perc, 1), "symbol": assign_symbol(short1_perc)
-                    },
-                2: {"description": self._short_item2_desc, "mark": round_decimal(self._short_item2_mark, 1),
-                    "total": int(self._short_item2_total), "percentage": round_decimal(short2_perc, 1), "symbol": assign_symbol(short2_perc)
-                    },
-                "weighted_final": short_final
-            },
+        "{test_weight}": test_weight,
 
-            "long_item": {"description": self._long_item_desc, "mark": round_decimal(self._long_item_mark, 1),
-                          "total": int(self._long_item_total), "percentage": round_decimal(long_perc, 1),
-                          "symbol": assign_symbol(long_perc), "weighted_final": long_final
-                          },
+        "{prelim1_mark}": g._mark(Mathematics.PRELIM_PAPER_1), "{prelim1_total}": g._total(Mathematics.PRELIM_PAPER_1),
+        "{prelim1_perc}": p1_perc,
 
-            "test": {
-                1: {"description": self._test1_desc, "mark": round_decimal(self._test1_mark, 1), "total": int(self._test1_total),
-                    "percentage": round_decimal(test1_perc, 1), "symbol": assign_symbol(test1_perc)},
-                2: {"description": self._test2_desc, "mark": round_decimal(self._test2_mark, 1),
-                          "total": int(self._test2_total),
-                          "percentage": round_decimal(test2_perc, 1), "symbol": assign_symbol(test2_perc)
-                          },
-                3: {"description": self._test3_desc, "mark": round_decimal(self._test3_mark, 1),
-                          "total": int(self._test3_total),
-                          "percentage": round_decimal(test3_perc, 1), "symbol": assign_symbol(test3_perc)
-                          },
-                "weighted_final": test_final
-            },
+        "{prelim2_mark}": g._mark(Mathematics.PRELIM_PAPER_2), "{prelim2_total}": g._total(Mathematics.PRELIM_PAPER_2),
+        "{prelim2_perc}": p2_perc,
 
-            "prelim": {
-                "paper1": {"mark": round_decimal(self._prelim1_mark, 1), "total": 300,
-                           "percentage": round_decimal(prelim1_perc, 1), "symbol": assign_symbol(prelim1_perc),
-                           "weighted_final": prelim1_final
-                           },
-                "paper2": {"mark": round_decimal(self._prelim2_mark, 1), "total": 300,
-                           "percentage": round_decimal(prelim2_perc, 1), "symbol": assign_symbol(prelim2_perc),
-                           "weighted_final": prelim2_final
-                           }
-            },
+        "{prelim_weight}": prelim_weight,
 
-            "final": {
-                "percentage": final_perc,
-                "symbol": final_symbol
-            }
-        }
+        "{total}": total, "{total_sym}": assign_symbol(total),
+    }
+
+    if short_wins:
+        data["{long_topic}"] = data["{long_mark}"] = data["{long_total}"] = data["{long_perc}"] = data["{long_weight}"] = ""
+    else:
+        data["{short1_topic}"] = data["{short1_mark}"] = data["{short1_total}"] = data["{short1_perc}"] = ""
+        data["{short2_topic}"] = data["{short2_mark}"] = data["{short2_total}"] = data["{short2_perc}"] = data["{short_weight}"] = ""
+
+    return data

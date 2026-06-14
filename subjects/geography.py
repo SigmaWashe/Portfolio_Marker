@@ -1,75 +1,45 @@
-from dataclasses import dataclass
+from core.calculator import round_decimal
+from core.constants import Geography
 
-from core.calculator import round_decimal, calculate_percentage, assign_symbol
-from core.constants import GeographyTest, GeographyWeight
 
-@dataclass
-class Geography:
-    
-    _task1_date: str
-    _task1_mark: float
-    _task2_date: str
-    _task2_mark: float
-    
-    _task3_date: str
-    _task3_mark: float
-    _task_total = 100
-    
-    _research_date: str
-    _research_mark: float
-    _research_total = 100
-    
-    _test1_date: str
-    _test1_mark: float
-    _test2_date: str
-    _test2_mark: float
-    _test_total = 100
-    
-    _prelim1_date: str
-    _prelim1_mark: float
-    _prelim1_total = 200
-    
-    _prelim2_date: str
-    _prelim2_mark: float
-    _prelim2_total = 100
+def build_data(g):
 
-    def markbreakdown(self):
-        test1 = calculate_percentage(self._test1_mark, self._test_total)*0.15
-        test2 = calculate_percentage(self._test2_mark, self._test_total)*0.15
-        prelim = calculate_percentage(self._prelim1_mark+self._prelim2_mark, 300)*0.25
+    research_weighted = g._weighted(Geography.RESEARCH)
+    tests_weighted = g._weighted(Geography.TEST, 0) + g._weighted(Geography.TEST, 1)
+    tasks_weighted = g._weighted(Geography.TASK, 0) + g._weighted(Geography.TASK, 1) + g._weighted(Geography.TASK, 2)
+    prelim_weighted = g._weighted(Geography.PRELIM_PAPER_1) + g._weighted(Geography.PRELIM_PAPER_2)
+    total = tests_weighted + tasks_weighted + prelim_weighted + research_weighted
 
-        task1 = calculate_percentage(self._task1_mark, self._task_total) * 0.15
-        task2 = calculate_percentage(self._task2_mark, self._task_total) * 0.15
-        task3 = calculate_percentage(self._task3_mark, self._task_total) * 0.15
+    exam = str(g.student.exam_num).zfill(13)
 
-        total = test1 + test2 + prelim
-        task_final = task1 + task2 + task3
-        research_task = calculate_percentage(self._research_mark, self._research_total) * 0.30
+    return {
+        "{NAME}": g.student.name, "{SURNAME}": g.student.surname,
+        "{1}": exam[0],  "{2}": exam[1],  "{3}": exam[2],  "{4}": exam[3],
+        "{5}": exam[4],  "{6}": exam[5],  "{7}": exam[6],  "{8}": exam[7],
+        "{9}": exam[8],  "{10}": exam[9], "{11}": exam[10], "{12}": exam[11], "{13}": exam[12],
 
-        if task_final < research_task:
-            total += task_final
-        else:
-            total += research_task
+        "{test1_date}": g._date(Geography.TEST), "{test1_mark}": g._mark(Geography.TEST, 0),
+        "{test1_weighted}": g._weighted(Geography.TEST, 0),
 
-        return {
-            "Controlled Tests": {
-                1: {"date": self._test1_date, "mark": round_decimal(self._test1_mark, 1), "weighted": round_decimal(test1, 1)},
-                2: {"date": self._test2_date, "mark": round_decimal(self._test2_mark, 1), "weighted": round_decimal(test2, 1)},
-                "total_weighted": round_decimal(test1 + test2, 1)
-            },
-            "Prelim": {
-                1: {"date": self._prelim1_date, "mark": round_decimal(self._prelim1_mark, 1)},
-                2: {"date": self._prelim2_date, "mark": round_decimal(self._prelim2_mark, 1)},
-                "Total": round_decimal(self._prelim1_mark + self._prelim2_mark, 1), "Weighted": round_decimal(prelim, 1)
-            },
-            "Assessment Task": {
-                1: {"date": self._task1_date, "mark": round_decimal(self._task1_mark, 1), "weighted": round_decimal(task1, 1)},
-                2: {"date": self._task2_date, "mark": round_decimal(self._task2_mark, 1), "weighted": round_decimal(task2, 1)},
-                3: {"date": self._task3_date, "mark": round_decimal(self._task3_mark, 1), "weighted": round_decimal(task3, 1)},
-                "total_weighted": round_decimal(task1 + task2 + task3, 1)
-            },
-            "Research Task": {
-                "date": self._research_date, "mark": round_decimal(self._research_mark, 1), "weighted": round_decimal(research_task, 1)
-            },
-            "Total": round_decimal(total, 1)
-        }
+        "{test2_date}": g._date(Geography.TEST), "{test2_mark}": g._mark(Geography.TEST, 1),
+        "{test2_weighted}": g._weighted(Geography.TEST, 1),
+        "{tests_weighted}": tests_weighted,
+
+        "{task1_date}": g._date(Geography.TASK), "{task1_mark}": g._mark(Geography.TASK, 0),
+        "{task1_weighted}": g._weighted(Geography.TASK, 0),
+
+        "{task2_date}": g._date(Geography.TASK), "{task2_mark}": g._mark(Geography.TASK, 1),
+        "{task2_weighted}": g._weighted(Geography.TASK, 1),
+
+        "{task3_date}": g._date(Geography.TASK), "{task3_mark}": g._mark(Geography.TASK, 2),
+        "{task3_weighted}": g._weighted(Geography.TASK, 2),
+        "{tasks_total_weighted}": tasks_weighted,
+
+        "{prelim1_date}": g._date(Geography.PRELIM_PAPER_1), "{prelim1_mark}": g._mark(Geography.PRELIM_PAPER_1),
+        "{prelim2_date}": g._date(Geography.PRELIM_PAPER_2), "{prelim2_mark}": g._mark(Geography.PRELIM_PAPER_2),
+        "{prelim_weighted}": prelim_weighted,
+
+        "{proj_date}": g._date(Geography.RESEARCH), "{proj_mark}": g._mark(Geography.RESEARCH),
+        "{proj_weighted}": research_weighted,
+        "{total}": total,
+    }

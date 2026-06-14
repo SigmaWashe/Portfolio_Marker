@@ -1,110 +1,51 @@
-from dataclasses import dataclass
+from core.calculator import round_decimal
+from core.constants import CAT
+from core.utils import get_center_number
 
-from core.calculator import round_decimal, calculate_percentage, assign_symbol
-from core.constants import CATWeight, CATTest
 
-@dataclass
-class ComputerApplicationTechnology:
-    theory_date: str
-    theory_desc: str
-    theory_mark: float
-    theory_total: int
+def build_data(subject):
+    theory_mark = subject._mark(CAT.THEORY)
+    theory_total = subject._total(CAT.THEORY)
+    prac_mark = subject._mark(CAT.PRAC)
+    prac_total = subject._total(CAT.PRAC)
+    alt_mark = subject._mark(CAT.ALT_TEST)
+    alt_total = subject._total(CAT.ALT_TEST)
+    p1_mark = subject._mark(CAT.PRELIM_1)
+    p2_mark = subject._mark(CAT.PRELIM_2)
+    pat_mark = subject._mark(CAT.PAT)
 
-    prac_date: str
-    prac_desc: str
-    prac_mark: float
-    prac_total: int
+    theory_weighted  = subject._weighted(CAT.THEORY)
+    prac_weighted = subject._weighted(CAT.PRAC)
+    alt_weighted = subject._weighted(CAT.ALT_TEST)
+    prelim1_weighted = subject._weighted(CAT.PRELIM_1)
+    prelim2_weighted = subject._weighted(CAT.PRELIM_2)
+    pat_weighted = subject._weighted(CAT.PAT)
 
-    alt_test_date: str
-    alt_test_desc: str
-    alt_test_mark: float
-    alt_test_total: int
+    sba_total = round_decimal(theory_weighted + prac_weighted + alt_weighted + prelim1_weighted + prelim2_weighted, 2)
+    total = round_decimal(sba_total + pat_weighted, 2)
 
-    prelim1_date: str
-    prelim1_desc: str
-    prelim1_mark: float
-    prelim1_total = 180
+    exam = subject.student.exam_num
 
-    prelim2_date: str
-    prelim2_desc: str
-    prelim2_mark: float
-    prelim2_total = 150
+    return {
+        "{CENTER_NUM}": get_center_number(exam), "{EXAM_NUM}": int(exam),
 
-    pat_date: str
-    pat_desc: str
-    pat_mark: float
-    pat_total = 170
+        "{theory_date}": subject._date(CAT.THEORY), "{theory_desc}": subject._desc(CAT.THEORY), "{theory_mark}": theory_mark,
+        "{theory_total}": theory_total, "{theory_weight}": theory_weighted,
 
-    def markbreakdown(self):
+        "{prac_date}": subject._date(CAT.PRAC), "{prac_desc}": subject._desc(CAT.PRAC), "{prac_mark}": prac_mark,
+        "{prac_total}": prac_total, "{prac_weight}": prac_weighted,
 
-        theory = calculate_percentage(self.theory_mark, self.theory_total)*0.175
-        prac = calculate_percentage(self.prac_mark, self.prac_total)*0.175
-        alt_test = calculate_percentage(self.alt_test_mark, self.alt_test_total)*0.15
-        prelim1 = calculate_percentage(self.prelim1_mark, self.prelim1_total) * 0.25
-        prelim2 = calculate_percentage(self.prelim2_mark, self.prelim2_total) * 0.25
-        pat = calculate_percentage(self.pat_mark, self.pat_total)
+        "{alt_date}": subject._date(CAT.ALT_TEST), "{alt_desc}": subject._desc(CAT.ALT_TEST), "{alt_mark}": alt_mark,
+        "{alt_total}": alt_total, "{alt_weight}": alt_weighted,
 
-        return{
-            "tests":{
-                "theory":{"date": self.theory_date, "description": self.theory_desc, "mark": round_decimal(self.theory_mark, 1),
-                          "total": self.theory_total, "actual_mark": round_decimal(theory, 1)},
-                "prac":{"date": self.prac_date, "description": self.prac_desc, "mark": round_decimal(self.prac_mark, 1),
-                        "total": self.prac_total, "actual_mark": round_decimal(prac, 1)},
-                "alt_test":{"date": self.alt_test_date, "description": self.alt_test_desc, "mark": round_decimal(self.alt_test_mark, 1),
-                           "total": self.alt_test_total, "actual_mark": round_decimal(alt_test, 1)}
-            },
-            "prelim":{
-                "paper1":{"date": self.prelim1_date, "description": self.prelim1_desc, "mark": round_decimal(self.prelim1_mark, 1),
-                          "total": self.prelim1_total, "actual_mark": round_decimal(prelim1, 1)},
-                "paper2":{"date": self.prelim2_date, "description": self.prelim2_desc, "mark": round_decimal(self.prelim2_mark, 1),
-                          "total": self.prelim2_total, "actual_mark": round_decimal(prelim2, 1)}
-            },
-            "sba_total": round_decimal(theory + prac + alt_test + prelim1 + prelim2, 1),
-            "pat":{"date": self.pat_date, "description": self.pat_desc, "mark": round_decimal(self.pat_mark, 1),
-                   "total": self.pat_total, "actual_mark": round_decimal(pat, 1)},
-            "total_sba": round_decimal(theory + prac + alt_test + prelim1 + prelim2 + pat, 1)
-        }
+        "{prelim1_date}": subject._date(CAT.PRELIM_1), "{prelim1_desc}": subject._desc(CAT.PRELIM_1),
+        "{prelim1_mark}": p1_mark, "{prelim1_weight}": prelim1_weighted,
 
-    def insert(self, exam_number: int , test_id: int, date: str, desc:str, mark:float, total:int):
-        conn = get_connection()
-        percentage = calculate_percentage(mark, total)
+        "{prelim2_date}": subject._date(CAT.PRELIM_2), "{prelim2_desc}": subject._desc(CAT.PRELIM_2),
+        "{prelim2_mark}": p2_mark, "{prelim2_weight}": prelim2_weighted,
 
-        match test_id:
-            case CATTest.THEORY:
-                weighted = round_decimal(percentage * CATWeight.THEORY, 2)
-                weighted_total = total * CATWeight.THEORY
-            case CATTest.PRAC:
-                weighted = round_decimal(percentage * CATWeight.PRAC, 2)
-                weighted_total = total * CATWeight.PRAC
-            case CATTest.ALT_TEST:
-                weighted = round_decimal(percentage * CATWeight.PRAC, 2)
-                weighted_total = total * CATWeight.PRAC
-            case CATTest.PRELIM_1:
-                weighted = round_decimal(percentage * CATWeight.PRELIM1, 2)
-                weighted_total = total * CATWeight.PRELIM1
-            case CATTest.PRELIM_2:
-                weighted = round_decimal(percentage * CATWeight.PRELIM2, 2)
-                weighted_total = total * CATWeight.PRELIM2
-            case CATTest.PAT:
-                weighted = round_decimal(percentage, 2)
-                weighted_total = total
-            case _:
-                weighted = round_decimal(percentage, 2)
-                weighted_total = total
+        "{sba_total}": sba_total, "{total}": total,
 
-        try:
-            conn.execute("""INSERT INTO ComputerApplicationTechnology
-                         (exam_number, test_ID, submission_date, test_description, actual_mark, possible_mark, weighted_mark, weighted_total)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                         """, (exam_number, test_id, date, desc, round_decimal(mark, 2), total, round_decimal(weighted, 2), weighted_total,))
-            conn.commit()
-        finally:
-            conn.close()
-
-    def delete(self, exam_number: int , id: int):
-        conn = get_connection()
-        try:
-            conn.execute("DELETE FROM ComputerApplicationTechnology WHERE exam_number = ? AND id = ?", (exam_number, id,))
-            conn.commit()
-        finally:
-            conn.close()
+        "{pat_date}": subject._date(CAT.PAT), "{pat_desc}": subject._desc(CAT.PAT),
+        "{pat_mark}": pat_mark, "{pat_weight}": pat_weighted,
+    }

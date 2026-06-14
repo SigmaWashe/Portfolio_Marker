@@ -1,71 +1,48 @@
 from dataclasses import dataclass
 
 from core.calculator import round_decimal, calculate_percentage
-from core.constants import HistoryTest, HistoryWeight
+from core.constants import History
 
-@dataclass
-class History:
-    _test1: float
-    _test1_total: int
-    _test2: float
-    _test2_total: int
-    _test3: float
-    _test3_total: int
+def build_data(g):
+    test1 = g._mark(History.TEST, 0)
+    test2 = g._mark(History.TEST, 1)
+    test3 = g._mark(History.TEST, 2)
+    prelim = g._mark(History.PRELIM_PAPER_1) + g._mark(History.PRELIM_PAPER_2)
+    total = test1 + test2 + test3 + prelim
 
-    _prelim1: float
-    _prelim2: float
-    _hist_inv: float
-    _source_analysis: float
-    _source_based_essay: float
-    _visual_analysis: float
+    history_inv = g._mark(History.HIST_INV)
+    source_analysis = g._mark(History.SOURCE_ANALYSIS)
+    source_based_essay = g._mark(History.SOURCE_BASED_ESSAY)
+    visual_analysis = g._mark(History.VISUAL_ANALYSIS)
+    secB_alt = source_analysis + source_based_essay + visual_analysis
 
-    def __init__(self, test1:float, test1_total:int, test2:float, test2_total:int, test3:float, test3_total,
-                 prelim1:float, prelim2:float, hist_inv:float, source_analysis:float, source_based_essay:float, visual_analysis:float):
-        self._test1 = test1
-        self._test1_total = test1_total
-        self._test2 = test2
-        self._test2_total = test2_total
-        self._test3 = test3
-        self._test3_total = test3_total
-        self._prelim1 = prelim1
-        self._prelim2 = prelim2
-        self._hist_inv = hist_inv
-        self._source_analysis = source_analysis
-        self._source_based_essay = source_based_essay
-        self._visual_analysis = visual_analysis
+    exam = str(g.student.exam_num).zfill(13)
 
-    def markbreakdown(self):
-        test1 = calculate_percentage(self._test1, self._test1_total) * 0.10
-        test2 = calculate_percentage(self._test2, self._test2_total) * 0.10
-        test3 = calculate_percentage(self._test3, self._test3_total) * 0.10
-        prelim = calculate_percentage(self._prelim1+self._prelim2, 300)*0.25
-        result = {
-            "Tests": {
-                1: {"mark": round_decimal(self._test1, 1), "total": self._test1_total, "weighted": round_decimal(test1, 1)},
-                2: {"mark": round_decimal(self._test2, 1), "total": self._test2_total, "weighted": round_decimal(test2, 1)},
-                3: {"mark": round_decimal(self._test3, 1), "total": self._test3_total, "weighted": round_decimal(test3, 1)},
-                "total_weighted": round_decimal(test1 + test2 + test3, 1)},
-            "Prelim":{"Paper1": round_decimal(self._prelim1, 1), "Paper2": round_decimal(self._prelim2, 1),
-                      "Weighted": round_decimal(prelim, 1)}
-        }
-        total = test1+test2+test3+prelim
-        hist_inv = calculate_percentage(self._hist_inv, 45)
-        source_analysis = calculate_percentage(self._source_analysis, 15)
-        source_based_essay = calculate_percentage(self._source_based_essay, 15)
-        visual_analysis = calculate_percentage(self._visual_analysis, 15)
-        secB = source_analysis + source_based_essay + visual_analysis
+    results = {
+        "{NAME}": g.student.name, "{SURNAME}": g.student.surname,
+        "{1}": exam[0],  "{2}": exam[1],  "{3}": exam[2],  "{4}": exam[3],
+        "{5}": exam[4],  "{6}": exam[5],  "{7}": exam[6],  "{8}": exam[7],
+        "{9}": exam[8],  "{10}": exam[9], "{11}": exam[10], "{12}": exam[11], "{13}": exam[12],
 
-        if hist_inv > secB:
-            total += hist_inv
-            result["Historical Investigation"] = {"mark": round_decimal(self._hist_inv, 1), "weighted": round_decimal(hist_inv, 1)*0.45}
-        else:
-            total += secB
-            result["Section B"] = {"Source Analysis": round_decimal(self._source_analysis, 1),
-                                   "Source Based Essay": round_decimal(self._source_based_essay, 1),
-                                   "Visual Analysis": round_decimal(self._visual_analysis, 1),
-                                   "weighted": round_decimal(source_analysis*0.15 + source_based_essay*0.15 + visual_analysis*0.15, 1)
-                                   }
+        "test1_mark": g._mark(History.TEST, 0), "test1_total": g._total(History.TEST, 0), "test1_weighted": g._weighted(History.TEST, 0),
+        "test2_mark": g._mark(History.TEST, 1), "test2_total": g._total(History.TEST, 1), "test2_weighted": g._weighted(History.TEST, 1),
+        "test3_mark": g._mark(History.TEST, 2), "test3_total": g._total(History.TEST, 2), "test3_weighted": g._weighted(History.TEST, 2),
+        "{secA_weighted}": g._weighted(History.TEST, 0) + g._weighted(History.TEST, 1) + g._weighted(History.TEST, 2),
 
-        result["Total"] = {"total": round_decimal(total, 1)}
+        "{prelim1_mark}": g._mark(History.PRELIM_PAPER_1, 0), "{prelim2_mark}": g._mark(History.PRELIM_PAPER_2, 1),
+        "{prelims_weighted}": g._mark(History.PRELIM_PAPER_1, 0) + g._mark(History.PRELIM_PAPER_2, 1),
+    }
 
-        return result
+    if history_inv > secB_alt:
+        total += g._weighted(History.HIST_INV)
+        results += {"{history_inv_mark}": history_inv, "{history_inv_weighted}": g._weighted(History.HIST_INV),
+                    "{secB_weighted}": g._weighted(History.HIST_INV)}
+        results += {"{source_analysis_mark}": '', "{source_essay_mark}": '', "{vis_analysis_mark}": ''}
+    else:
+        total += secB_alt
+        results += {"{source_analysis_mark}": source_analysis, "{source_essay_mark}": source_based_essay, "{vis_analysis_mark}": visual_analysis,
+        "{secB_weighted}": g._weighted(History.SOURCE_ANALYSIS) + g._weighted(History.SOURCE_BASED_ESSAY) + g._weighted(History.VISUAL_ANALYSIS)}
+        results += {"{history_inv_mark}": '', "{history_inv_weighted}": ''}
+    results += {"total": total}
+
+    return results

@@ -1,46 +1,18 @@
-from dataclasses import dataclass
+from core.utils import get_center_number
+from core.constants import IT
 
-from core.calculator import round_decimal, calculate_percentage
-from core.constants import ITTest, ITWeight
 
-@dataclass
-class InformationTechnology:
+def build_data(g):
+    exam_num = g.student.exam_num
+    return {
+        "{CENTER_NUM}": get_center_number(exam_num), "{EXAM_NUM}": int(exam_num),
 
-    _pat_desc: str
-    _pat_mark: float
-    _pat_total: int
-
-    _theory_desc: str
-    _theory_mark: float
-    _theory_total: int
-
-    _prac_desc: str
-    _prac_mark: float
-    _prac_total: int
-
-    _alt_desc: str
-    _alt_mark: float
-    _alt_total: int
-
-    _prelim_prac_desc: str
-    _prelim_prac_mark: float
-
-    _prelim_theory_desc: str
-    _prelim_theory_mark: float
-
-    def markbreakdown(self):
-        pat = calculate_percentage(self._pat_mark, self._pat_total)
-        theory = calculate_percentage(self._theory_mark, self._theory_total) * 0.175
-        prac = calculate_percentage(self._prac_mark, self._prac_total) * 0.175
-        alt = calculate_percentage(self._alt_mark, self._alt_total) * 0.15
-        prelim_theory = calculate_percentage(self._prelim_theory_mark, 150) * 0.25
-        prelim_prac = calculate_percentage(self._prelim_prac_mark, 150) * 0.25
-        return {
-            "PAT": {"desc": self._pat_desc, "mark": round_decimal(pat, 2), "final": round_decimal(pat, 0)},
-            "Theory": {"desc": self._theory_desc, "mark": round_decimal(theory, 2)},
-            "Prac": {"desc": self._prac_desc, "mark": round_decimal(prac, 2)},
-            "Alt": {"desc": self._alt_desc, "mark": round_decimal(alt, 2)},
-            "Prelim Theory": {"desc": self._prelim_theory_desc, "mark": round_decimal(prelim_theory, 2)},
-            "Prelim Prac": {"desc": self._prelim_prac_desc, "mark": round_decimal(prelim_prac, 2)},
-            "SBA Final": round_decimal(pat+theory+prac+alt+prelim_theory+prelim_prac, 0)
-        }
+        "pat_desc": g._desc(IT.PAT), "pat_weight": g._weight(IT.PAT),
+        "theory_desc": g._desc(IT.THEORY), "theory_weight": g._weight(IT.THEORY),
+        "prac_desc": g._desc(IT.PRAC), "prac_weight": g._weight(IT.PRAC),
+        "alt_desc": g._desc(IT.ALT), "alt_weight": g._weight(IT.ALT),
+        "prelim1_desc": g._desc(IT.PRELIM_THEORY), "prelim1_weight": g._weight(IT.PRELIM_THEORY),
+        "prelim2_desc": g._desc(IT.PRELIM_PRAC), "prelim2_weight": g._weight(IT.PRELIM_PRAC),
+        "sba_mark": g._weight(IT.PAT) + g._weight(IT.THEORY) + g._weight(IT.PRAC) + g._weight(IT.ALT) +
+                    g._weight(IT.PRELIM_THEORY) + g._weight(IT.PRELIM_PRAC),
+    }

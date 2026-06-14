@@ -2,10 +2,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="{% static 'base.css' %}" />
+  <link rel="stylesheet" href="{% static 'layout.css' %}" />
+  <link rel="stylesheet" href="{% static 'components.css' %}" />
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+  <div class="layout">
 
+    <!-- Desktop sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo" onclick="toggleSidebar()">
+        <div class="sidebar-logo-mark">PM</div>
+        <div class="sidebar-logo-text">Portfolio Marker</div>
+      </div>
+
+      <div class="nav-section">Menu</div>
+      <a href="{% url 'dashboard' %}" class="nav-item active">
+        <i data-lucide="layout-dashboard" width="22" height="22"></i>
+        <span class="nav-label">Dashboard</span>
+      </a>
+
+      {% if active_subjects %}
+        <div class="nav-section">Subjects</div>
+        {% for subject in active_subjects %}
+          <a href="{% url 'subject' subject.name|slugify %}" class="nav-item" title="{{ subject.name }}">
+            <i data-lucide="{{ subject.icon }}" width="22" height="22"></i>
+            <span class="nav-label">{{ subject.name }}</span>
+          </a>
+        {% endfor %}
+      {% endif %}
+
+      <div class="sidebar-bottom">
+        <a href="{% url 'select_subjects' %}" class="nav-item">
+          <i data-lucide="settings" width="16" height="16"></i>
+          <span class="nav-label">Manage Subjects</span>
+        </a>
+        <a href="{% url 'logout' %}" class="nav-item">
+          <i data-lucide="log-out" width="16" height="16"></i>
+          <span class="nav-label">Log out</span>
+        </a>
+      </div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div class="topbar-left">
+          <h2>Hello, {{ student.name }}</h2>
+          <p>Exam Number: {{ student.exam_number }}</p>
+        </div>
+        <div class="avatar">{{ student.name|first }}{{ student.surname|first }}</div>
+      </div>
+
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-label">Active Subjects</div>
+          <div class="stat-value">{{ active_subjects|length }}</div>
+          <div class="stat-sub">This year</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tests captured</div>
+          <div class="stat-value">{{ total_tests }}</div>
+          <div class="stat-sub">Across all subjects</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Average %</div>
+          <div class="stat-value">{% if avg_percentage %}{{ avg_percentage }}%{% else %}—{% endif %}</div>
+          <div class="stat-sub">Overall</div>
+        </div>
+      </div>
+
+      <div class="section-title">Your subjects</div>
+      {% if active_subjects %}
+        <div class="subjects-grid">
+          {% for subject in active_subjects %}
+            <a href="{% url 'subject' subject.name|slugify %}" class="subject-card">
+              <div class="subject-card-name">{{ subject.name }}</div>
+              <div class="subject-bar-wrap">
+                <div class="subject-bar" style="width: 0%"></div>
+              </div>
+              <div class="subject-footer">
+                <span>No tests yet</span>
+                <span class="badge badge-e">—</span>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-subjects">
+          No subjects selected yet.
+          <a href="{% url 'select_subjects' %}">Select your subjects</a>.
+        </div>
+      {% endif %}
+    </main>
+
+  </div>
+
+  <!-- Mobile bottom nav -->
+  <nav class="mobile-nav">
+    <a href="{% url 'dashboard' %}" class="mobile-nav-item active" title="Dashboard">
+      <i data-lucide="layout-dashboard" width="22" height="22"></i>
+      <span>Dashboard</span>
+    </a>
+    {% if active_subjects %}
+      <a href="{% url 'subject' active_subjects.0.name|slugify %}" class="mobile-nav-item" title="Subjects">
+        <i data-lucide="book-open" width="22" height="22"></i>
+        <span>Subjects</span>
+      </a>
+    {% endif %}
+    <a href="{% url 'select_subjects' %}" class="mobile-nav-item" title="Manage">
+      <i data-lucide="settings" width="22" height="22"></i>
+      <span>Manage</span>
+    </a>
+    <a href="{% url 'logout' %}" class="mobile-nav-item" title="Log out">
+      <i data-lucide="log-out" width="22" height="22"></i>
+      <span>Log out</span>
+    </a>
+  </nav>
+
+  <script src="{% static 'main.js' %}"></script>
 </body>
 </html>

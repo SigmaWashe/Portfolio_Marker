@@ -1,0 +1,185 @@
+/* ── Stats ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: #fff;
+  border: 0.5px solid #E7E5E4;
+  border-radius: 0.75rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #78716C;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1C1917;
+}
+
+.stat-sub {
+  font-size: 0.75rem;
+  color: #A8A29E;
+  margin-top: 0.2rem;
+}
+
+/* ── Subject cards ── */
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1C1917;
+  margin-bottom: 1rem;
+}
+
+.subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.subject-card {
+  background: #fff;
+  border: 0.5px solid #E7E5E4;
+  border-radius: 0.75rem;
+  padding: 1.1rem 1.25rem;
+  text-decoration: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  display: block;
+}
+
+.subject-card:hover {
+  border-color: #1E3A5F;
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.08);
+}
+
+.subject-card-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1C1917;
+  margin-bottom: 0.75rem;
+}
+
+.subject-bar-wrap {
+  height: 6px;
+  background: #E7E5E4;
+  border-radius: 3px;
+  margin-bottom: 0.5rem;
+}
+
+.subject-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: #1E3A5F;
+}
+
+.subject-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #78716C;
+}
+
+/* ── Badges ── */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.badge-a {
+  background: #e6f4ef;
+  color: #1b7f5c;
+}
+
+.badge-b {
+  background: #eef6ff;
+  color: #1E3A5F;
+}
+
+.badge-c {
+  background: #fdf3e1;
+  color: #b8871f;
+}
+
+.badge-d {
+  background: #fdf3e1;
+  color: #b8871f;
+}
+
+.badge-e,
+.badge-f,
+.badge-ff {
+  background: #faeaea;
+  color: #b13535;
+}
+
+/* ── Empty states ── */
+.empty-subjects {
+  text-align: center;
+  padding: 3rem;
+  color: #A8A29E;
+  font-size: 0.875rem;
+  background: #fff;
+  border: 0.5px solid #E7E5E4;
+  border-radius: 0.75rem;
+}
+
+.empty-subjects a {
+  color: #1E3A5F;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.empty-subjects a:hover {
+  text-decoration: underline;
+}
+
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Make third stat card span both columns */
+  .stats .stat-card:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .subjects-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .stats .stat-card:nth-child(3) {
+    grid-column: auto;
+  }
+
+  .subjects-grid {
+    grid-template-columns: 1fr;
+  }
+}

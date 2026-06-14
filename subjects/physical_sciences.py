@@ -1,55 +1,29 @@
-from dataclasses import dataclass
+from core.constants import PhysicalSciences as Physics
+from core.utils import get_center_number
 
-from core.calculator import round_decimal, calculate_percentage
+def build_data(g):
+    exam_num = g.studentexam_num
+    return {
+        "{NAME}": g.student.name, "{SURNAME}": g.student.surname, "{EXAM_NUM}": exam_num, "CENTER_NUM": get_center_number(exam_num),
 
-@dataclass
-class PhysicalSciences:
+        "{prac1_date}": g._date(Physics.PHYS_PRAC), "{prac1_total}": g._total(Physics.PHYS_PRAC), "{prac1_mark}": g._mark(Physics.PHYS_PRAC),
+        "{prac1_perc}": g._perc(Physics.PHYS_PRAC), "{prac1_weight}": g._weight(Physics.PHYS_PRAC),
 
-    _phys_prac_date: str
-    _phys_prac_mark:  float
-    _phys_prac_total: int
-    _chem_prac_date: str
-    _chem_prac_mark:  float
-    _chem_prac_total: int
+        "{prac2_date}": g._date(Physics.CHEM_PRAC), "{prac2_total}": g._total(Physics.CHEM_PRAC), "{prac2_mark}": g._mark(Physics.CHEM_PRAC),
+        "{prac2_perc}": g._perc(Physics.CHEM_PRAC), "{prac2_weight}": g._weight(Physics.CHEM_PRAC),
 
-    _phys_test_date: str
-    _phys_test_mark:  float
-    _phys_test_total: int
-    _chem_test_date: str
-    _chem_test_mark:  float
-    _chem_test_total: int
+        "{phys_date}": g._date(Physics.PHYS_TEST), "{phys_total}": g._total(Physics.PHYS_TEST), "{phys_mark}": g._mark(Physics.PHYS_TEST),
+        "{phys_perc}": g._perc(Physics.PHYS_TEST), "{phys_weight}": g._weight(Physics.PHYS_TEST),
 
-    _paper1_date: str
-    _paper1_mark: int
-    _paper2_date: str
-    _paper2_mark: int
+        "{chem_date}": g._date(Physics.CHEM_TEST), "{chem_total}": g._total(Physics.CHEM_TEST), "{chem_mark}": g._mark(Physics.CHEM_TEST),
+        "{chem_perc}": g._perc(Physics.CHEM_TEST), "{chem_weight}": g._weight(Physics.CHEM_TEST),
 
-    def markbreakdown(self):
-        phys_prac = calculate_percentage(self._phys_prac_mark, self._phys_prac_total)
-        chem_prac = calculate_percentage(self._chem_prac_mark, self._chem_prac_total)
-        phys_test = calculate_percentage(self._phys_test_mark, self._phys_test_total)
-        chem_test = calculate_percentage(self._chem_test_mark, self._chem_test_total)
-        paper1 = calculate_percentage(self._paper1_mark, 200)
-        paper2 = calculate_percentage(self._paper2_mark, 200)
+        "{prelim1_date}": g._date(Physics.PRELIM_1), "{prelim1_total}": g._total(Physics.PRELIM_1), "{prelim1_mark}": g._mark(Physics.PRELIM_1),
+        "{prelim1_perc}": g._perc(Physics.PRELIM_1), "{prelim1_weight}": g._weight(Physics.PRELIM_1),
 
-        return {
-            "Investigations": {
-                "Physics": {"date": self._phys_prac_date, "total": self._phys_prac_total, "mark": round_decimal(self._phys_prac_mark, 1),
-                            "percent": phys_prac, "weighted": phys_prac * 0.15},
-                "Chemistry": {"date": self._chem_prac_date, "total": self._chem_prac_total, "mark": round_decimal(self._chem_prac_mark, 1),
-                            "percent": chem_prac, "weighted": chem_prac * 0.15}
-            },
-            "Tests": {
-                "Physics": {"date": self._phys_test_date, "total": self._phys_test_total, "mark": round_decimal(self._phys_test_mark, 1),
-                            "percent": phys_test, "weighted": phys_test * 0.15},
-                "Chemistry": {"date": self._chem_test_date, "total": self._chem_test_total, "mark": round_decimal(self._chem_test_mark, 1),
-                              "percent": chem_test, "weighted": chem_test * 0.15}
-            },
-            "Prelims": {
-                "Physics": {"date": self._paper1_date, "total": 200, "mark": round_decimal(self._paper1_mark, 1),
-                            "percent": paper1, "weighted": paper1 * 0.20},
-                "Chemistry": {"date": self._paper2_date, "total": 200, "mark": round_decimal(self._paper2_mark, 1),
-                              "percent": paper2, "weighted": paper2 * 0.20}
-            },
-            "Total": phys_prac*0.15 + chem_prac*0.15 + phys_test*0.15 + chem_test*0.15 + paper1*0.20 + paper2*0.20
-        }
+        "{prelim2_date}": g._date(Physics.PRELIM_2), "{prelim2_total}": g._total(Physics.PRELIM_2), "{prelim2_mark}": g._mark(Physics.PRELIM_2),
+        "{prelim2_perc}": g._perc(Physics.PRELIM_2), "{prelim2_weight}": g._weight(Physics.PRELIM_2),
+
+        "total": g._weight(Physics.PHYS_PRAC) + g._weight(Physics.CHEM_PRAC) + g._weight(Physics.PHYS_TEST) +
+                 g._weight(Physics.CHEM_TEST) + g._weight(Physics.PRELIM_1) + g._weight(Physics.PRELIM_2),
+    }

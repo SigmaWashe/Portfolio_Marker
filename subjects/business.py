@@ -1,62 +1,62 @@
-from dataclasses import dataclass
-from core.calculator import round_decimal, calculate_percentage, assign_symbol
+from core.calculator import assign_symbol
+from core.constants import Business
 
-@dataclass
-class Business:
-    task1_desc: str
-    task1_mark: float
-    task1_total: int
 
-    task2_desc: str
-    task2_mark: float
-    task2_total: int
+def build_data(g):
+    t1_mark     = g._mark(Business.TASK, 0)
+    t1_tot      = g._total(Business.TASK, 0)
+    t2_mark     = g._mark(Business.TASK, 1)
+    t2_tot      = g._total(Business.TASK, 1)
 
-    sectionA_B_Desc: str
-    sectionA_B_Mark: float
-    sectionA_B_Total: int
+    secAB_mark  = g._mark(Business.SECTION_AB)
+    sab_tot     = g._total(Business.SECTION_AB)
+    secC_mark   = g._mark(Business.SECTION_C)
+    sc_tot      = g._total(Business.SECTION_C)
+    prelim_mark = g._mark(Business.PRELIM)
+    p_tot       = g._total(Business.PRELIM)
 
-    sectionC_Desc: str
-    sectionC_Mark: float
-    sectionC_Total: int
+    t1_perc     = g._perc(Business.TASK, 0)
+    t2_perc     = g._perc(Business.TASK, 1)
+    sab_perc    = g._perc(Business.SECTION_AB)
+    sc_perc     = g._perc(Business.SECTION_C)
+    p_perc      = g._perc(Business.PRELIM)
 
-    prelim_Desc: str
-    prelim_Mark: float
-    prelim_total: int = 300
+    t1_weighted  = g._weighted(Business.TASK, 0)
+    t2_weighted  = g._weighted(Business.TASK, 1)
+    sab_weighted = g._weighted(Business.SECTION_AB)
+    sc_weighted  = g._weighted(Business.SECTION_C)
+    p_weighted   = g._weighted(Business.PRELIM)
 
-    def markbreakdown(self):
-        task1 = calculate_percentage(self.task1_mark, self.task1_total)
-        task2 = calculate_percentage(self.task2_mark, self.task2_total)
-        sectionA_B = calculate_percentage(self.sectionA_B_Mark, self.sectionA_B_Total)
-        section_c = calculate_percentage(self.sectionC_Mark, self.sectionC_Total)
-        prelim = calculate_percentage(self.prelim_Mark, self.prelim_total)
-        total_sba_mark = (task1 + task2) * 0.2 + sectionA_B * 0.15 + section_c * 0.15 + prelim * 0.3
+    total_weighted = t1_weighted + t2_weighted + sab_weighted + sc_weighted + p_weighted
 
-        return {
-            "task1": {
-                "description": self.task1_desc, "mark": round_decimal(self.task1_mark, 1),
-                "total": self.task1_total, "percentage": round_decimal(task1, 1),
-                "sba_mark": round_decimal(task1 * 0.2, 1), "symbol": assign_symbol(task1)
-            },
-            "task2": {
-                "description": self.task2_desc, "mark": round_decimal(self.task2_mark, 1),
-                "total": self.task2_total, "percentage": round_decimal(task2, 1),
-                "sba_mark": round_decimal(task2 * 0.2, 1), "symbol": assign_symbol(task2)
-            },
-            "sectionA_B": {
-                "description": self.sectionA_B_Desc, "mark": round_decimal(self.sectionA_B_Mark, 1),
-                "total": self.sectionA_B_Total, "percentage": round_decimal(sectionA_B, 1),
-                "sba_mark": round_decimal(sectionA_B * 0.15, 1), "symbol": assign_symbol(sectionA_B)
-            },
-            "section_c": {
-                "description": self.sectionC_Desc, "mark": round_decimal(self.sectionC_Mark, 1),
-                "total": self.sectionC_Total, "percentage": round_decimal(section_c, 1),
-                "sba_mark": round_decimal(section_c * 0.15, 1), "symbol": assign_symbol(section_c)
-            },
-            "prelim": {
-                "description": self.prelim_Desc, "mark": round_decimal(self.prelim_Mark, 1),
-                "total": self.prelim_total, "percentage": round_decimal(prelim, 1),
-                "sba_mark": round_decimal(prelim * 0.3, 1), "symbol": assign_symbol(prelim)
-            },
-            "total": round_decimal(total_sba_mark, 1),
-            "total_symbol": assign_symbol(total_sba_mark)
-        }
+    return {
+        "{NAME}":    g.student.name,   "{SURNAME}":     g.student.surname,
+        "{SCHOOL}":  getattr(g.student, 'school', ''), "{EXAM_NUMBER}": str(g.student.exam_num),
+
+        "{task1_desc}":     g._desc(Business.TASK, 0, 'Task 1'),
+        "{task1_mark}":     t1_mark,  "{task1_total}":    t1_tot,
+        "{task1_perc}":     t1_perc,
+        "{task1_weighted}": t1_weighted, "{task1_sym}":  g._sym(Business.TASK, 0),
+
+        "{task2_desc}":     g._desc(Business.TASK, 1, 'Task 2'),
+        "{task2_mark}":     t2_mark,  "{task2_total}":    t2_tot,
+        "{task2_perc}":     t2_perc,
+        "{task2_weighted}": t2_weighted, "{task2_sym}":  g._sym(Business.TASK, 1),
+
+        "{secAB_desc}":     g._desc(Business.SECTION_AB, default='Section A and B Test'),
+        "{secAB_mark}":     secAB_mark, "{secAB_total}":  sab_tot,
+        "{secAB_perc}":     sab_perc,
+        "{secAB_weighted}": sab_weighted, "{secAB_sym}": g._sym(Business.SECTION_AB),
+
+        "{secC_desc}":      g._desc(Business.SECTION_C, default='Section C Test'),
+        "{secC_mark}":      secC_mark,  "{secC_total}":   sc_tot,
+        "{secC_perc}":      sc_perc,
+        "{secC_weighted}":  sc_weighted, "{secC_sym}":   g._sym(Business.SECTION_C),
+
+        "{prelim_desc}":        g._desc(Business.PRELIM, default='Preliminary Examination'),
+        "{prelim_mark}":        prelim_mark, "{prelim_total}": p_tot,
+        "{prelim_perc}":        p_perc,
+        "{prelim_weighted}":    p_weighted, "{prelim_sym}": g._sym(Business.PRELIM),
+
+        "{total_weighted}": total_weighted, "{total_sym}": assign_symbol(total_weighted),
+    }

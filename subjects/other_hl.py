@@ -1,86 +1,15 @@
-from dataclasses import dataclass
-
 from core.calculator import round_decimal, calculate_percentage, assign_symbol
-from core.constants import EngHLTest, EngHLWeight, OtherHLTest, OtherHLWeight
+from core.constants import OtherHL
 
-@dataclass
-class _HomeLanguage:
-    _ext_writing1: float
-    _ext_writing2: float
-    _test1: float
-    _test2: float
-    _test3: float
-    _prelim_paper1: float
-    _prelim_paper2: float
-    _prelim_paper1_total: int = 100
-    _prelim_paper2_total: int = 100
 
-@dataclass(kw_only=True)
-class English(_HomeLanguage):
-    cat: float
-    literature: float
-    lit_total: int
-
-    def markbreakdown(self) -> dict:
-        ext1_sym = assign_symbol(calculate_percentage(self._ext_writing1, 45))
-        ext2_sym = assign_symbol(calculate_percentage(self._ext_writing2, 45))
-        sec1 = round_decimal(self._ext_writing1 + self._ext_writing2, 1)
-        sec1_sym = assign_symbol(calculate_percentage(sec1, 90))
-
-        cat_sym = assign_symbol(calculate_percentage(self.cat, 50))
-        sec2 = self.cat
-        sec2_sym = cat_sym
-
-        lit_sym = assign_symbol(calculate_percentage(self.literature, self.lit_total))
-        sec3 = round_decimal(calculate_percentage(self.literature, self.lit_total) * 0.6, 0)
-        sec3_sym = assign_symbol(calculate_percentage(sec3, 60))
-
-        test1_sym = assign_symbol(calculate_percentage(self._test1, 20))
-        test2_sym = assign_symbol(calculate_percentage(self._test2, 20))
-        test3_sym = assign_symbol(calculate_percentage(self._test3, 20))
-        sec4 = round_decimal(self._test1 + self._test2 + self._test3, 1)
-        sec4_sym = assign_symbol(calculate_percentage(sec4, 60))
-
-        prelim = self._prelim_paper1 + self._prelim_paper2
-        prelim_total = self._prelim_paper1_total + self._prelim_paper2_total
-        sec5 = round_decimal(calculate_percentage(prelim, prelim_total) * 0.4, 1)
-        sec5_sym = assign_symbol(calculate_percentage(sec5, 40))
-
-        total = round_decimal((sec1 + sec2 + sec3 + sec4 + sec5) / 3, 1)
-        total_sym = assign_symbol(calculate_percentage(total, 100))
-
-        return {
-            "ext1": {"mark": round_decimal(self._ext_writing1, 2), "symbol": ext1_sym},
-            "ext2": {"mark": round_decimal(self._ext_writing2, 2), "symbol": ext2_sym},
-            "sec1": {"mark": sec1, "symbol": sec1_sym},
-            "cat": {"mark": self.cat, "symbol": cat_sym},
-            "sec2": {"mark": sec2, "symbol": sec2_sym},
-            "literature": {"mark": self.literature, "total": self.lit_total, "symbol": lit_sym},
-            "sec3": {"mark": sec3, "symbol": sec3_sym},
-            "test1": {"mark": self._test1, "symbol": test1_sym},
-            "test2": {"mark": self._test2, "symbol": test2_sym},
-            "test3": {"mark": self._test3, "symbol": test3_sym},
-            "sec4": {"mark": sec4, "symbol": sec4_sym},
-            "prelim": {"mark": prelim, "total": prelim_total, "symbol": assign_symbol(calculate_percentage(prelim, prelim_total))},
-            "sec5": {"mark": sec5, "sec5_symbol": sec5_sym},
-            "total": {"mark": total, "total_symbol": total_sym},
-        }
-
-@dataclass(kw_only=True)
-class OtherHl(_HomeLanguage):
-    ext_writing1_total: int
-    ext_writing2_total: int
-    ext_writing3: float
-    ext_writing3_total: int
-    cat_task1: float
-    cat_task2: float
-    cat_task2_total: int
-    literature: float
-    test2_total: int
-    test3_total: int
-    test4: float
-    test4_total: int
-
+def build_data(g):
+    ext1 = g._mark(OtherHL.EXT_WRITING, 0)
+    ext1_total = g._total(OtherHL.EXT_WRITING, 0)
+    ext2 = g._mark(OtherHL.EXT_WRITING, 1)
+    ext2_total = g._total(OtherHL.EXT_WRITING, 1)
+    ext3 = g._mark(OtherHL.EXT_WRITING, 2)
+    ext3_total = g._total(OtherHL.EXT_WRITING, 2)
+"""
     def markbreakdown(self) -> dict:
 
         # Section 1 - Extended Writing (scaled to 30%)
@@ -137,3 +66,4 @@ class OtherHl(_HomeLanguage):
             "sec5": {"mark": sec5, "symbol": sec5_sym},
             "total": {"mark": total, "symbol": total_sym},
         }
+    """

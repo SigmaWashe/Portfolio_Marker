@@ -5,7 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Select Subjects</title>
-  <link rel="stylesheet" href="{% static 'style.css' %}" />
+  <link rel="stylesheet" href="{% static 'base.css' %}" />
+  <link rel="stylesheet" href="{% static 'layout.css' %}" />
+  <link rel="stylesheet" href="{% static 'components.css' %}" />
   <style>
     .subject-selector {
       display: flex;
@@ -159,80 +161,5 @@
       </div>
     </form>
   </main>
-
-  <script>
-    const selected = {}; // { id: name }
-
-    function addSubject() {
-      const dropdown = document.getElementById('subject-dropdown');
-      const id = dropdown.value;
-      const name = dropdown.options[dropdown.selectedIndex].dataset.name;
-      const error = document.getElementById('duplicate-error');
-
-      if (!id) return;
-
-      if (selected[id]) {
-        error.style.display = 'block';
-        setTimeout(() => error.style.display = 'none', 2000);
-        return;
-      }
-
-      error.style.display = 'none';
-      selected[id] = name;
-      dropdown.value = '';
-      renderList();
-    }
-
-    function removeSubject(id) {
-      delete selected[id];
-      renderList();
-    }
-
-    function renderList() {
-      const list = document.getElementById('selected-list');
-      const hiddenInputs = document.getElementById('hidden-inputs');
-      const emptyNote = document.getElementById('empty-note');
-      const count = document.getElementById('count');
-
-      // Clear
-      list.innerHTML = '';
-      hiddenInputs.innerHTML = '';
-
-      const ids = Object.keys(selected);
-      count.textContent = ids.length;
-
-      if (ids.length === 0) {
-        list.innerHTML = '<p class="empty-note">No subjects added yet.</p>';
-        return;
-      }
-
-      ids.forEach(id => {
-        // List item
-        const item = document.createElement('div');
-        item.className = 'selected-item';
-        item.innerHTML = `
-          <span>${selected[id]}</span>
-          <button type="button" class="btn-remove" onclick="removeSubject('${id}')" title="Remove">&times;</button>
-        `;
-        list.appendChild(item);
-
-        // Hidden input
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'subjects';
-        input.value = id;
-        hiddenInputs.appendChild(input);
-      });
-    }
-
-    function validateForm() {
-      const ids = Object.keys(selected);
-      if (ids.length < 3) {
-        alert('Please select at least 3 subjects before continuing.');
-        return false;
-      }
-      return true;
-    }
-  </script>
 </body>
 </html>
