@@ -10,11 +10,11 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import Test, Student, Subject, Schools, ChosenSubjects
+from student.models import Test, Student, Subject, Schools, ChosenSubjects
 from core.subjects import *
 from core.base import ReportGenerator, REPORT_TEMPLATES
 from core.utils import get_center_number
-from .forms import SignupForm
+from student.forms import SignupForm
 
 
 def signup(request):
