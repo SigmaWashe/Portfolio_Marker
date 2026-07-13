@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Add Student — EduTrack{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom: 2rem;">
+  <h1 style="font-size: 1.5rem; font-weight: 600;">Add student</h1>
+  <p style="color: #78716C;">Create a new student account and assign their subjects.</p>
+</div>
+
+<div class="card" style="max-width: 720px; background: #fff; border: 0.5px solid #E7E5E4; border-radius: 0.75rem;">
+  <div class="card-body" style="padding: 1.5rem;">
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="form-grid" style="margin-bottom: 16px;">
+        <div class="form-group">
+          <label>First name</label>
+          {{ form.first_name }}
+        </div>
+        <div class="form-group">
+          <label>Last name</label>
+          {{ form.last_name }}
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label>Exam number</label>
+        {{ form.exam_num }}
+      </div>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label>Email address</label>
+        {{ form.email }}
+      </div>
+
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label>Password</label>
+        {{ form.password }}
+      </div>
+
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label>Course Allocations</label>
+        <div style="font-size: 12px; color: #78716C; margin: 4px 0 8px;">
+          <span id="count" style="font-weight: 600;">0</span> subject(s) selected
+        </div>
+
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
+          <select id="subject-dropdown" style="flex: 1; padding: 0.6rem; border: 1.5px solid #E7E5E4; border-radius: 0.6rem;">
+            <option value="">— Select a subject —</option>
+            {% for subject in subjects %}
+              <option value="{{ subject.id }}" data-name="{{ subject.subject }}">{{ subject.subject }}</option>
+            {% endfor %}
+          </select>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="addSubject()">Add</button>
+        </div>
+
+        <div id="selected-list" style="display: flex; flex-direction: column; gap: 6px;">
+          <p style="font-size: 13px; color: #78716C;" id="empty-note">No subjects added yet.</p>
+        </div>
+        <div id="hidden-inputs"></div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Create student account</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const selected = {};
+  function addSubject() {
+    const dropdown = document.getElementById('subject-dropdown');
+    const id = dropdown.value;
+    const name = dropdown.options[dropdown.selectedIndex]?.getAttribute('data-name');
+    if(!id || selected[id]) return;
+
+    selected[id] = name;
+    document.getElementById('empty-note')?.remove();
+
+    const item = document.createElement('div');
+    item.id = `item-${id}`;
+    item.style = 'display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:#EEF2F7; border:1px solid #BACAD6; border-radius:0.5rem; font-size:14px;';
+    /* Using Lucide X Icon inside the dynamic markup */
+    item.innerHTML = `<span>${name}</span><button type="button" onclick="removeSubject('${id}')" style="background:none; border:none; cursor:pointer; color:#b13535; display:flex; align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg></button>`;
+    document.getElementById('selected-list').appendChild(item);
+
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden'; hidden.name = 'subject'; hidden.value = id; hidden.id = `hidden-${id}`;
+    document.getElementById('hidden-inputs').appendChild(hidden);
+    document.getElementById('count').textContent = Object.keys(selected).length;
+    dropdown.value = '';
+  }
+
+  function removeSubject(id) {
+    delete selected[id];
+    document.getElementById(`item-${id}`)?.remove();
+    document.getElementById(`hidden-${id}`)?.remove();
+    document.getElementById('count').textContent = Object.keys(selected).length;
+  }
+</script>
+{% endblock %}

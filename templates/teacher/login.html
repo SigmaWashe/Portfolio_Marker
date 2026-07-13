@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Sign in — EduTrack{% endblock %}
+
+{% block body %}
+<div class="auth-main">
+  <form method="post" novalidate style="border: 0.5px solid #E7E5E4; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    {% csrf_token %}
+    <div class="logo-row">
+      <div class="logo-mark">E</div>
+      <div>
+        <div class="logo-text" style="font-weight: 600;">EduTrack</div>
+        <div style="font-size: 11px; color: #78716C;">Teacher Portal</div>
+      </div>
+    </div>
+
+    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem; color: #1C1917;">Welcome back</h3>
+    <p style="color: #78716C; font-size: 0.875rem; margin-bottom: 1.5rem;">Sign in to your account to continue.</p>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-error" style="margin-bottom: 1rem;">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="form-group" style="margin-bottom: 16px;">
+      <label style="font-size: 0.75rem; font-weight: 600; color: #78716C;">Username</label>
+      <input type="text" name="{{ form.username.html_name }}" value="{{ form.username.value|default_if_none:'' }}" placeholder="your_username" style="display:block; width:100%; padding:0.6rem 0.85rem; border:1.5px solid #E7E5E4; border-radius:0.6rem;" />
+    </div>
+
+    <div class="form-group" style="margin-bottom: 24px;">
+      <label style="font-size: 0.75rem; font-weight: 600; color: #78716C;">Password</label>
+      <input type="password" name="{{ form.password.html_name }}" placeholder="••••••••" style="display:block; width:100%; padding:0.6rem 0.85rem; border:1.5px solid #E7E5E4; border-radius:0.6rem;" />
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.72rem;">Sign in</button>
+    
+    <p style="text-align: center; margin-top: 1.5rem; font-size: 0.815rem; color: #78716C;">
+      Don't have an account? <a href="{% url 'signup' %}" style="color: #1E3A5F; font-weight: 500;">Sign up</a>
+    </p>
+  </form>
+</div>
+{% endblock %}

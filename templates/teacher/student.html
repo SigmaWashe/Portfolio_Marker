@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+{% block title %}Students — Portfolio Marker{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid #E7E5E4; margin-bottom: 24px; }
+  .tab-btn {
+    padding: 9px 16px; font-size: 13px; font-weight: 500;
+    border: none; background: none; cursor: pointer; font-family: inherit;
+    color: #78716C; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; border-radius: 0; transition: color .15s;
+  }
+  .tab-btn:hover { color: #1C1917; }
+  .tab-btn.active { color: #1E3A5F; border-bottom-color: #1E3A5F; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Panel card ── */
+  .panel-card {
+    background: #fff; border: 0.5px solid #E7E5E4;
+    border-radius: 0.85rem; padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .panel-title { font-size: 0.9rem; font-weight: 600; color: #1C1917; margin-bottom: 1rem; }
+  .panel-desc  { font-size: 0.8rem; color: #78716C; margin-bottom: 1.1rem; }
+
+  /* ── Student info strip ── */
+  .student-strip {
+    background: #EEF2F7; border: 1px solid #BACAD6;
+    border-radius: 0.75rem; padding: 14px 20px;
+    display: flex; align-items: center; gap: 20px;
+    margin-bottom: 1.25rem; flex-wrap: wrap;
+  }
+  .strip-item  { display: flex; flex-direction: column; gap: 2px; }
+  .strip-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #1E3A5F; }
+  .strip-value { font-size: 14px; font-weight: 500; color: #1C1917; }
+
+  /* ── Mark pill ── */
+  .mark-pill { display: inline-flex; align-items: center; gap: 3px; font-family: 'DM Mono', monospace; font-size: 0.82rem; }
+  .mark-sep  { color: #A8A29E; }
+
+  /* ── Percentage bar ── */
+  .pct-cell   { display: flex; align-items: center; gap: 8px; }
+  .pct-bar-bg { width: 70px; height: 5px; background: #E7E5E4; border-radius: 99px; overflow: hidden; flex-shrink: 0; }
+  .pct-bar-fill { height: 100%; border-radius: 99px; background: #1E3A5F; }
+
+  /* ── Form grids ── */
+  .form-grid-4  { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.85rem; }
+  .inline-row   { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+  .inline-row .form-group { flex: 1; min-width: 140px; }
+
+  /* ── Adjusted grids (subject.css) ── */
+  .single-form-adjusted {
+    display: grid;
+    grid-template-columns: 1.5fr 1.5fr 1.2fr 1fr 1fr auto;
+    gap: 0.75rem; align-items: end;
+  }
+  .form-grid-bulk-adjusted {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 1fr;
+    gap: 0.75rem; align-items: end; margin-bottom: 0.75rem;
+  }
+
+  @media (max-width: 768px) {
+    .student-strip { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .inline-row .form-group { min-width: 100%; }
+    .single-form-adjusted, .form-grid-bulk-adjusted { grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+    .single-form-adjusted .form-group:first-child,
+    .single-form-adjusted .form-group:nth-child(2) { grid-column: 1 / -1; }
+    .single-form-adjusted .form-group:last-child    { grid-column: 1 / -1; }
+  }
+
+  @media (max-width: 480px) {
+    .form-grid-4 { grid-template-columns: 1fr 1fr; }
+    .tabs { gap: 0; }
+    .tab-btn { padding: 8px 10px; font-size: 0.78rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header page-header-row">
+  <div>
+    <h1>Students</h1>
+    <p>Look up student metrics or configure marks for {{ teacher.subject.subject }}.</p>
+  </div>
+  <a href="{% url 'teacher:create_student' %}" class="btn btn-primary btn-sm">
+    <i data-lucide="user-plus" width="14" height="14"></i>
+    Add student
+  </a>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="lookup">Look up student</button>
+  <button class="tab-btn" data-tab="create-test">Create test</button>
+  <button class="tab-btn" data-tab="enter-marks">Enter marks</button>
+  <button class="tab-btn" data-tab="bulk-marks">Bulk marks</button>
+</div>
+
+<!-- ════════════ TAB 1 — Look up student ════════════ -->
+<div class="tab-panel active" id="tab-lookup">
+  <div class="panel-card">
+    <div class="panel-title">Find student</div>
+
+    <form method="post" action="{% url 'teacher:student' %}">
+      {% csrf_token %}
+      <div class="inline-row" style="margin-bottom:1.1rem">
+        <div class="form-group">
+          <label for="{{ form.students.id_for_label }}">Student</label>
+          {{ form.students }}
+          {% if form.students.errors %}
+            <ul class="errorlist">{% for e in form.students.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+        <div class="form-group" style="flex:0 0 auto">
+          <label style="opacity:0">Action</label>
+          <button type="submit" class="btn btn-primary">View results</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Student info strip (shown after POST) -->
+    {% if name %}
+    <div class="student-strip">
+      <div class="strip-item">
+        <div class="strip-label">Name</div>
+        <div class="strip-value">{{ name }} {{ surname }}</div>
+      </div>
+      <div class="strip-item">
+        <div class="strip-label">Exam number</div>
+        <div class="strip-value" style="font-family:'DM Mono',monospace;font-size:13px;">{{ exam_num }}</div>
+      </div>
+      <div class="strip-item">
+        <div class="strip-label">Subject</div>
+        <div class="strip-value">{{ teacher.subject.subject }}</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Results table -->
+    {% if tests %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Test description</th>
+            <th>Type</th>
+            <th>Mark</th>
+            <th>Weighted</th>
+            <th>%</th>
+            <th>Symbol</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for test in tests %}
+          <tr>
+            <td>{{ test.test_description }}</td>
+            <td style="font-family:'DM Mono',monospace;color:#78716C;font-size:12px;">{{ test.test_type }}</td>
+            <td>
+              <span class="mark-pill">
+                {{ test.actual_mark }}<span class="mark-sep">/</span>{{ test.possible_mark }}
+              </span>
+            </td>
+            <td style="font-family:'DM Mono',monospace;">{{ test.weighted_mark }}</td>
+            <td>
+              <div class="pct-cell">
+                <span style="font-family:'DM Mono',monospace;min-width:38px;">{{ test.percentage }}%</span>
+                <div class="pct-bar-bg">
+                  <div class="pct-bar-fill" style="width:{{ test.percentage }}%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              {% if test.symbol_info %}
+                <span class="badge badge-{{ test.symbol|lower }}">{{ test.symbol_info.label }}</span>
+              {% else %}
+                <span class="badge badge-{{ test.symbol|lower }}">{{ test.symbol }}</span>
+              {% endif %}
+            </td>
+            <td style="color:#78716C;font-size:13px;">{{ test.submission_date }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% elif name %}
+    <div class="empty-state">
+      <i data-lucide="file-user" width="22" height="22"></i>
+      <p>No recorded tests found for {{ name }} {{ surname }}.</p>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i data-lucide="user" width="22" height="22"></i>
+      <p>Select a student above to view their results.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ════════════ TAB 2 — Create test ════════════ -->
+<div class="tab-panel" id="tab-create-test">
+  <div class="panel-card">
+    <div class="panel-title">Create a new assessment task</div>
+    <p class="panel-desc">
+      This creates a placeholder test for every student in your class.
+      Enter individual marks later using the <em>Enter marks</em> tab.
+    </p>
+
+    <form method="post" action="{% url 'teacher:student' %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create_test" />
+      <div class="single-form-adjusted" style="margin-bottom:1rem;">
+        {% with ct_form as create_form %}
+          {% if create_form %}
+            <div class="form-group">
+              <label for="{{ create_form.test_description.id_for_label }}">Description</label>
+              {{ create_form.test_description }}
+              {% if create_form.test_description.errors %}
+                <ul class="errorlist">{% for e in create_form.test_description.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+              {% endif %}
+            </div>
+            <div class="form-group">
+              <label for="{{ create_form.test_type.id_for_label }}">Type</label>
+              {{ create_form.test_type }}
+            </div>
+            <div class="form-group">
+              <label for="{{ create_form.possible_mark.id_for_label }}">Max mark</label>
+              {{ create_form.possible_mark }}
+            </div>
+            <div class="form-group">
+              <label for="{{ create_form.weighting.id_for_label }}">Weight %</label>
+              {{ create_form.weighting }}
+            </div>
+            <div class="form-group">
+              <label for="{{ create_form.submission_date.id_for_label }}">Date</label>
+              {{ create_form.submission_date }}
+            </div>
+          {% else %}
+            <div class="form-group">
+              <label for="{{ form.test_description.id_for_label }}">Description</label>
+              {{ form.test_description }}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.test_type.id_for_label }}">Type</label>
+              {{ form.test_type }}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.possible_mark.id_for_label }}">Max mark</label>
+              {{ form.possible_mark }}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.weighting.id_for_label }}">Weight %</label>
+              {{ form.weighting }}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.submission_date.id_for_label }}">Date</label>
+              {{ form.submission_date }}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <button type="submit" class="btn btn-primary" style="align-self:flex-end">
+          <i data-lucide="plus" width="14" height="14"></i>
+          Save test
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════ TAB 3 — Enter marks ════════════ -->
+<div class="tab-panel" id="tab-enter-marks">
+  <div class="panel-card">
+    <div class="panel-title">Log a single student's mark</div>
+
+    <form method="post" action="{% url 'teacher:test_insert' %}">
+      {% csrf_token %}
+      <div class="form-grid-bulk-adjusted" style="margin-bottom:1rem;">
+        <div class="form-group">
+          <label for="{{ form.students.id_for_label }}">Student</label>
+          {{ form.students }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.tests.id_for_label }}">Test</label>
+          {{ form.tests }}
+        </div>
+        <div class="form-group">
+          <label for="id_mark_single">Mark achieved</label>
+          <input type="number" id="id_mark_single" name="mark" min="0" step="0.5" placeholder="e.g. 67" />
+        </div>
+        <div class="form-group">
+          <label for="id_total_single">Total marks</label>
+          <input type="number" id="id_total_single" name="total" min="1" placeholder="e.g. 100" />
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Save mark</button>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════ TAB 4 — Bulk marks ════════════ -->
+<div class="tab-panel" id="tab-bulk-marks">
+  <div class="panel-card">
+    <div class="panel-title">Apply universal score to class list</div>
+    <p class="panel-desc">
+      Useful when the whole class writes the same test and you want to enter
+      marks one by one later, or when a default mark applies to everyone.
+    </p>
+
+    <form method="post" action="{% url 'teacher:test_insert_all' %}">
+      {% csrf_token %}
+      <div style="display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;align-items:flex-end;">
+        <div class="form-group" style="flex:2;min-width:180px;">
+          <label for="{{ form.tests.id_for_label }}">Target assessment</label>
+          {{ form.tests }}
+          {% if form.tests.errors %}
+            <ul class="errorlist">{% for e in form.tests.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+        <div class="form-group" style="flex:1;min-width:100px;">
+          <label for="id_mark_bulk">Score</label>
+          <input type="number" id="id_mark_bulk" name="mark" min="0" step="0.5" placeholder="e.g. 65" />
+        </div>
+        <div class="form-group" style="flex:1;min-width:100px;">
+          <label for="id_total_bulk">Out of</label>
+          <input type="number" id="id_total_bulk" name="total" min="1" placeholder="e.g. 100" />
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        Apply to all {{ current_students|length }} student{{ current_students|length|pluralize }}
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Tab switching -->
+<script>
+  (function () {
+    const buttons = document.querySelectorAll('.tab-btn');
+    const panels  = document.querySelectorAll('.tab-panel');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        buttons.forEach(b => b.classList.remove('active'));
+        panels.forEach(p  => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + target).classList.add('active');
+      });
+    });
+  })();
+
+  lucide.createIcons();
+</script>
+{% endblock %}

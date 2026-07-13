@@ -1,0 +1,140 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Portfolio Marker{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'base.css' %}" />
+  <link rel="stylesheet" href="{% static 'layout.css' %}" />
+  <link rel="stylesheet" href="{% static 'components.css' %}" />
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+{% block body %}
+<div class="layout">
+
+  <!-- Desktop sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo" onclick="toggleSidebar()">
+      <div class="sidebar-logo-mark">PM</div>
+      <div class="sidebar-logo-text">Portfolio Marker</div>
+    </div>
+
+    <div class="nav-section">Menu</div>
+    <a href="{% url 'teacher:dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      <i data-lucide="layout-dashboard" width="22" height="22"></i>
+      <span class="nav-label">Dashboard</span>
+    </a>
+    <a href="{% url 'teacher:student' %}" class="nav-item {% if request.resolver_match.url_name == 'student' or request.resolver_match.url_name == 'create_student' %}active{% endif %}">
+      <i data-lucide="users" width="22" height="22"></i>
+      <span class="nav-label">Students</span>
+    </a>
+
+    {% if active_subjects %}
+      <div class="nav-section">Subjects</div>
+      {% for subject in active_subjects %}
+        <a href="{% url 'teacher:subject' subject.name|slugify %}" class="nav-item {% if request.resolver_match.url_name == 'subject' %}active{% endif %}" title="{{ subject.name }}">
+          <i data-lucide="{{ subject.icon }}" width="22" height="22"></i>
+          <span class="nav-label">{{ subject.name }}</span>
+        </a>
+      {% endfor %}
+    {% endif %}
+
+    <div class="sidebar-bottom">
+      <a href="{% url 'teacher:student' %}" class="nav-item">
+        <i data-lucide="settings" width="16" height="16"></i>
+        <span class="nav-label">Manage Subjects</span>
+      </a>
+      {% if request.user.is_authenticated %}
+      <div class="nav-item" style="pointer-events:none; gap:10px;">
+        <div class="avatar" style="width:28px;height:28px;font-size:11px;flex-shrink:0;">
+          {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+        </div>
+        <div style="overflow:hidden;">
+          <div style="font-size:12px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ request.user.get_full_name }}</div>
+          {% if request.user.teacher.subject %}
+          <div style="font-size:11px;color:#93B8D8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ request.user.teacher.subject.subject }}</div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+      <form method="post" action="{% url 'logout' %}" style="margin:0">
+        {% csrf_token %}
+        <button type="submit" class="nav-item" style="width:100%;background:none;border:none;cursor:pointer;font-family:inherit;">
+          <i data-lucide="log-out" width="16" height="16"></i>
+          <span class="nav-label">Log out</span>
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main">
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="alert {% if msg.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+          {{ msg }}
+        </div>
+      {% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Mobile bottom nav -->
+  <nav class="mobile-nav">
+    <a href="{% url 'teacher:dashboard' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" title="Dashboard">
+      <i data-lucide="layout-dashboard" width="22" height="22"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="{% url 'teacher:student' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'student' or request.resolver_match.url_name == 'create_student' %}active{% endif %}" title="Students">
+      <i data-lucide="users" width="22" height="22"></i>
+      <span>Students</span>
+    </a>
+    {% if active_subjects %}
+      <a href="{% url 'teacher:subject' active_subjects.0.name|slugify %}" class="mobile-nav-item" title="Subjects">
+        <i data-lucide="book-open" width="22" height="22"></i>
+        <span>Subjects</span>
+      </a>
+    {% endif %}
+    <a href="{% url 'teacher:student' %}" class="mobile-nav-item" title="Manage">
+      <i data-lucide="settings" width="22" height="22"></i>
+      <span>Manage</span>
+    </a>
+    <a href="{% url 'teacher:logout' %}" class="mobile-nav-item" title="Log out">
+      <i data-lucide="log-out" width="22" height="22"></i>
+      <span>Log out</span>
+    </a>
+  </nav>
+
+</div>
+{% endblock %}
+
+<!-- Alerts -->
+<style>
+  .alert { padding: 0.65rem 1rem; border-radius: 0.6rem; font-size: 0.875rem; margin-bottom: 1rem; }
+  .alert-success { background: #e6f4ef; color: #1b7f5c; }
+  .alert-error   { background: #faeaea; color: #b13535; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+</style>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  lucide.createIcons();
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('retracted');
+  }
+</script>
+
+</body>
+</html>

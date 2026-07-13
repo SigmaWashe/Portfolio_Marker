@@ -1,0 +1,401 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="{% static 'base.css' %}" />
+  <link rel="stylesheet" href="{% static 'auth.css' %}" />
+  <style>
+    /* ── Role panels ── */
+    .role-panel { display: none; }
+    .role-panel.active { display: block; }
+
+    select.select-input {
+      display: block;
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      border: 1.5px solid #C8C5C2;
+      border-radius: 0.6rem;
+      font-size: 0.875rem;
+      color: #1C1917;
+      background: #fff;
+      font-family: inherit;
+      appearance: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    select.select-input:focus { border-color: #1E3A5F; }
+
+    /* ── Searchable select ── */
+    .searchable-select-wrap {
+      position: relative;
+      min-width: 0;
+    }
+    .searchable-select-wrap .select-input {
+      /* the real <select> is visually hidden but stays in the DOM/form */
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+    .ss-search-input {
+      display: block;
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      border: 1.5px solid #C8C5C2;
+      border-radius: 0.6rem;
+      font-size: 0.875rem;
+      color: #1C1917;
+      background: #fff;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .ss-search-input:focus { border-color: #1E3A5F; }
+    .ss-search-input::placeholder { color: #1C1917; opacity: 1; }
+    .ss-search-input.ss-placeholder-active { color: #78716C; }
+
+    .ss-options {
+      display: none;
+      position: absolute;
+      z-index: 20;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      width: auto;
+      max-width: 320px;
+      box-sizing: border-box;
+      max-height: 220px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: #fff;
+      border: 1.5px solid #C8C5C2;
+      border-radius: 0.6rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      padding: 0.3rem;
+    }
+    .ss-options.open { display: block; }
+
+    .ss-option {
+      padding: 0.5rem 0.65rem;
+      border-radius: 0.4rem;
+      font-size: 0.875rem;
+      color: #1C1917;
+      cursor: pointer;
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    .ss-option:hover,
+    .ss-option.ss-active {
+      background: #EEF2F7;
+    }
+    .ss-option.ss-selected {
+      font-weight: 600;
+      color: #1E3A5F;
+    }
+    .ss-no-results {
+      padding: 0.5rem 0.65rem;
+      font-size: 0.85rem;
+      color: #A8A29E;
+    }
+
+    /* ── Wider form + two-column field rows ── */
+    form {
+      max-width: 560px;
+    }
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.1rem;
+    }
+    .field-row > label {
+      min-width: 0;
+      margin-bottom: 0;
+    }
+    @media (max-width: 560px) {
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <form method="POST" action="{% url 'signup' %}" id="signup-form">
+      {% csrf_token %}
+
+      <div class="logo-row">
+        <div class="logo-mark">PM</div>
+        <div class="logo-text">Portfolio Marker</div>
+      </div>
+
+      <div class="accent-bar"></div>
+      <h3>Create account</h3>
+
+      {% if error %}
+        <p class="error">{{ error }}</p>
+      {% endif %}
+
+      <p class="subtitle">Join us today</p>
+
+      <input type="hidden" name="role" id="id_role" value="teacher" />
+
+      <div class="step-panel active" id="panel-1">
+
+
+      <label>
+        <input type="text" name="name" id="id_name" placeholder="Enter your name" />
+      </label>
+      <label>
+        <input type="text" name="surname" id="id_surname" placeholder="Enter your surname" />
+      </label>
+
+        <div class="role-panel active" id="role-panel-teacher">
+          <label>
+            <input type="email" name="email" id="id_email" placeholder="Enter your email" />
+          </label>
+          <div class="field-row">
+            <label>
+              <div class="searchable-select-wrap">
+                <select name="school" id="id_school" class="select-input">
+                  <option value="">— Select school —</option>
+                  {% for pk, label in form.school.field.choices %}
+                    {% if pk %}
+                      <option value="{{ pk }}">{{ label }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </label>
+            <label>
+              <div class="searchable-select-wrap">
+                <select name="subject" id="id_subject" class="select-input">
+                  <option value="">— Select subject —</option>
+                  {% for pk, label in form.subject.field.choices %}
+                    {% if pk %}
+                      <option value="{{ pk }}">{{ label }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="button-wrap">
+          <button type="button" class="button" onclick="goToStep2()">Next</button>
+          <div class="divider">or</div>
+          <a href="{% url 'google_login' %}" class="button-google">
+            <img src="{% static 'images/google_icon.svg' %}" alt="Google Icon" width="20" height="20"/>
+            Continue with Google
+          </a>
+          <a href="{% url 'login' %}" class="button button-outline">Log In</a>
+        </div>
+      </div>
+
+      <div class="step-panel" id="panel-2">
+        <label>
+          <span>Password</span>
+          <div class="passwd-wrap">
+            <input type="password" name="password1" id="id_password" placeholder="Enter your password" required />
+            <button type="button" class="show-passwd" id="show-passwd-1">
+              <img src="{% static 'images/eye_open.svg' %}" alt="Show Password" />
+            </button>
+          </div>
+        </label>
+        <label>
+          <span>Confirm Password</span>
+          <div class="passwd-wrap">
+            <input type="password" name="password2" id="id_confirm_password" placeholder="Confirm your password" />
+            <button type="button" class="show-passwd" id="show-passwd-2">
+              <img src="{% static 'images/eye_open.svg' %}" alt="Show Password" />
+            </button>
+          </div>
+        </label>
+        <div class="button-wrap">
+          <button type="submit" class="button">Create account</button>
+          <button type="button" class="button button-outline" onclick="goToStep1()">Back</button>
+        </div>
+      </div>
+
+    </form>
+  </main>
+  <script src="{% static 'main.js' %}"></script>
+  <script>
+    function goToStep2() {
+      let valid = true;
+
+      const name = document.getElementById('id_name').value.trim();
+      const surname = document.getElementById('id_surname').value.trim();
+      const email = document.getElementById('id_email').value.trim();
+      const school = document.getElementById('id_school').value;
+      const subject = document.getElementById('id_subject').value;
+      valid = !!(name && surname && email && school && subject);
+
+      if (!valid) {
+        alert('Please fill in all fields before continuing.');
+        return;
+      }
+
+      document.getElementById('panel-1').classList.remove('active');
+      document.getElementById('panel-2').classList.add('active');
+      document.getElementById('circle-1').classList.add('done');
+      document.getElementById('circle-2').classList.add('active');
+      document.getElementById('label-2').classList.add('active');
+      document.getElementById('line-1').classList.add('done');
+    }
+
+    function goToStep1() {
+      document.getElementById('panel-2').classList.remove('active');
+      document.getElementById('panel-1').classList.add('active');
+      document.getElementById('circle-2').classList.remove('active');
+      document.getElementById('label-2').classList.remove('active');
+      document.getElementById('line-1').classList.remove('done');
+    }
+
+    // ── Searchable select ──
+    function initSearchableSelects() {
+      document.querySelectorAll('.searchable-select-wrap').forEach(function (wrap) {
+        const select = wrap.querySelector('select.select-input');
+        if (!select || wrap.dataset.ssInit) return;
+        wrap.dataset.ssInit = '1';
+
+        const options = Array.from(select.options).map(function (opt) {
+          return { value: opt.value, label: opt.textContent, placeholder: opt.value === '' };
+        });
+        const placeholderLabel = (options.find(function (o) { return o.placeholder; }) || {}).label || '';
+
+        const searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.className = 'ss-search-input ss-placeholder-active';
+        searchInput.autocomplete = 'off';
+        searchInput.placeholder = placeholderLabel;
+        searchInput.value = '';
+
+        const optionsBox = document.createElement('div');
+        optionsBox.className = 'ss-options';
+
+        wrap.appendChild(searchInput);
+        wrap.appendChild(optionsBox);
+
+        let activeIndex = -1;
+        let filtered = options.filter(function (o) { return !o.placeholder; });
+
+        function renderOptions(list) {
+          optionsBox.innerHTML = '';
+          if (list.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'ss-no-results';
+            empty.textContent = 'No matches found';
+            optionsBox.appendChild(empty);
+            return;
+          }
+          list.forEach(function (opt, idx) {
+            const row = document.createElement('div');
+            row.className = 'ss-option' + (opt.value === select.value ? ' ss-selected' : '') + (idx === activeIndex ? ' ss-active' : '');
+            row.textContent = opt.label;
+            row.addEventListener('mousedown', function (e) {
+              e.preventDefault();
+              selectOption(opt);
+            });
+            optionsBox.appendChild(row);
+          });
+        }
+
+        function selectOption(opt) {
+          select.value = opt.value;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+          searchInput.value = opt.value === '' ? '' : opt.label;
+          searchInput.classList.toggle('ss-placeholder-active', opt.value === '');
+          closeOptions();
+        }
+
+        function openOptions() {
+          filtered = options.filter(function (o) { return !o.placeholder; });
+          activeIndex = -1;
+          renderOptions(filtered);
+          optionsBox.classList.add('open');
+        }
+
+        function closeOptions() {
+          optionsBox.classList.remove('open');
+        }
+
+        function filterOptions(query) {
+          const q = query.trim().toLowerCase();
+          const real = options.filter(function (o) { return !o.placeholder; });
+          if (!q) return real;
+          return real.filter(function (o) { return o.label.toLowerCase().includes(q); });
+        }
+
+        searchInput.addEventListener('focus', function () {
+          searchInput.select();
+          openOptions();
+        });
+
+        searchInput.addEventListener('click', function () {
+          if (!optionsBox.classList.contains('open')) {
+            openOptions();
+          }
+        });
+
+        searchInput.addEventListener('input', function () {
+          searchInput.classList.remove('ss-placeholder-active');
+          filtered = filterOptions(searchInput.value);
+          activeIndex = -1;
+          renderOptions(filtered);
+          optionsBox.classList.add('open');
+        });
+
+        searchInput.addEventListener('keydown', function (e) {
+          if (!optionsBox.classList.contains('open')) {
+            if (e.key === 'ArrowDown' || e.key === 'Enter') {
+              openOptions();
+              e.preventDefault();
+            }
+            return;
+          }
+          if (e.key === 'ArrowDown') {
+            activeIndex = Math.min(activeIndex + 1, filtered.length - 1);
+            renderOptions(filtered);
+            e.preventDefault();
+          } else if (e.key === 'ArrowUp') {
+            activeIndex = Math.max(activeIndex - 1, 0);
+            renderOptions(filtered);
+            e.preventDefault();
+          } else if (e.key === 'Enter') {
+            if (activeIndex >= 0 && filtered[activeIndex]) {
+              selectOption(filtered[activeIndex]);
+            }
+            e.preventDefault();
+          } else if (e.key === 'Escape') {
+            closeOptions();
+          }
+        });
+
+        document.addEventListener('click', function (e) {
+          if (!wrap.contains(e.target)) closeOptions();
+        });
+
+        const preselected = options.find(function (o) { return o.value === select.value && !o.placeholder; });
+        if (preselected) {
+          searchInput.value = preselected.label;
+          searchInput.classList.remove('ss-placeholder-active');
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', initSearchableSelects);
+  </script>
+</body>
+</html>
