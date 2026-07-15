@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'base.css' %}" />
+  <link rel="stylesheet" href="{% static 'subject.css' %}" />
   <link rel="stylesheet" href="{% static 'layout.css' %}" />
   <link rel="stylesheet" href="{% static 'components.css' %}" />
   {% block extra_head %}{% endblock %}
@@ -26,11 +27,11 @@
     </div>
 
     <div class="nav-section">Menu</div>
-    <a href="{% url 'teacher:dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+    <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
       <i data-lucide="layout-dashboard" width="22" height="22"></i>
       <span class="nav-label">Dashboard</span>
     </a>
-    <a href="{% url 'teacher:student' %}" class="nav-item {% if request.resolver_match.url_name == 'student' or request.resolver_match.url_name == 'create_student' %}active{% endif %}">
+    <a href="{% url 'student' %}" class="nav-item {% if request.resolver_match.url_name == 'student' or request.resolver_match.url_name == 'create_student' %}active{% endif %}">
       <i data-lucide="users" width="22" height="22"></i>
       <span class="nav-label">Students</span>
     </a>
@@ -38,7 +39,7 @@
     {% if active_subjects %}
       <div class="nav-section">Subjects</div>
       {% for subject in active_subjects %}
-        <a href="{% url 'teacher:subject' subject.name|slugify %}" class="nav-item {% if request.resolver_match.url_name == 'subject' %}active{% endif %}" title="{{ subject.name }}">
+        <a href="{% url 'subject' subject.name|slugify %}" class="nav-item {% if request.resolver_match.url_name == 'subject' %}active{% endif %}" title="{{ subject.name }}">
           <i data-lucide="{{ subject.icon }}" width="22" height="22"></i>
           <span class="nav-label">{{ subject.name }}</span>
         </a>
@@ -46,7 +47,7 @@
     {% endif %}
 
     <div class="sidebar-bottom">
-      <a href="{% url 'teacher:student' %}" class="nav-item">
+      <a href="{% url 'student' %}" class="nav-item">
         <i data-lucide="settings" width="16" height="16"></i>
         <span class="nav-label">Manage Subjects</span>
       </a>
@@ -87,25 +88,25 @@
 
   <!-- Mobile bottom nav -->
   <nav class="mobile-nav">
-    <a href="{% url 'teacher:dashboard' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" title="Dashboard">
+    <a href="{% url 'dashboard' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" title="Dashboard">
       <i data-lucide="layout-dashboard" width="22" height="22"></i>
       <span>Dashboard</span>
     </a>
-    <a href="{% url 'teacher:student' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'student' or request.resolver_match.url_name == 'create_student' %}active{% endif %}" title="Students">
+    <a href="{% url 'student' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'student' or request.resolver_match.url_name == 'create_student' %}active{% endif %}" title="Students">
       <i data-lucide="users" width="22" height="22"></i>
       <span>Students</span>
     </a>
     {% if active_subjects %}
-      <a href="{% url 'teacher:subject' active_subjects.0.name|slugify %}" class="mobile-nav-item" title="Subjects">
+      <a href="{% url 'subject' active_subjects.0.name|slugify %}" class="mobile-nav-item" title="Subjects">
         <i data-lucide="book-open" width="22" height="22"></i>
         <span>Subjects</span>
       </a>
     {% endif %}
-    <a href="{% url 'teacher:student' %}" class="mobile-nav-item" title="Manage">
+    <a href="{% url 'student' %}" class="mobile-nav-item" title="Manage">
       <i data-lucide="settings" width="22" height="22"></i>
       <span>Manage</span>
     </a>
-    <a href="{% url 'teacher:logout' %}" class="mobile-nav-item" title="Log out">
+    <a href="{% url 'logout' %}" class="mobile-nav-item" title="Log out">
       <i data-lucide="log-out" width="22" height="22"></i>
       <span>Log out</span>
     </a>

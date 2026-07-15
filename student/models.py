@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from core.constants import SubjectID as SubID
 
 class Student(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student')
     exam_num = models.BigIntegerField(unique=True)
     name = models.CharField(max_length=100)
     surname = models.CharField(max_length=100)
@@ -41,8 +41,8 @@ class Subject(models.Model):
 
 class Test(models.Model):
     test_id = models.AutoField(primary_key=True, editable=False)
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='tests')
-    student = models.ForeignKey('Student', editable=False, on_delete=models.CASCADE, related_name='tests')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='student_tests')
+    student = models.ForeignKey('Student', editable=False, on_delete=models.CASCADE, related_name='student_tests')
     test_type = models.IntegerField(default=1)
     test_description = models.CharField(max_length=255)
     actual_mark = models.FloatField()

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "teacher/base.html" %}
 {% block title %}Students — Portfolio Marker{% endblock %}
 
 {% block extra_head %}
@@ -85,7 +85,7 @@
     <h1>Students</h1>
     <p>Look up student metrics or configure marks for {{ teacher.subject.subject }}.</p>
   </div>
-  <a href="{% url 'teacher:create_student' %}" class="btn btn-primary btn-sm">
+  <a href="{% url 'create_student' %}" class="btn btn-primary btn-sm">
     <i data-lucide="user-plus" width="14" height="14"></i>
     Add student
   </a>
@@ -104,7 +104,7 @@
   <div class="panel-card">
     <div class="panel-title">Find student</div>
 
-    <form method="post" action="{% url 'teacher:student' %}">
+    <form method="post" action="{% url 'student' %}">
       {% csrf_token %}
       <div class="inline-row" style="margin-bottom:1.1rem">
         <div class="form-group">
@@ -116,7 +116,8 @@
         </div>
         <div class="form-group" style="flex:0 0 auto">
           <label style="opacity:0">Action</label>
-          <button type="submit" class="btn btn-primary">View results</button>
+          <button type="submit" class="btn btn-primary">View tests</button>
+          <button onclick=""></button>
         </div>
       </div>
     </form>
@@ -194,7 +195,7 @@
     {% else %}
     <div class="empty-state">
       <i data-lucide="user" width="22" height="22"></i>
-      <p>Select a student above to view their results.</p>
+      <p>Select a student above to view their tests.</p>
     </div>
     {% endif %}
   </div>
@@ -209,9 +210,8 @@
       Enter individual marks later using the <em>Enter marks</em> tab.
     </p>
 
-    <form method="post" action="{% url 'teacher:student' %}">
+    <form method="post" action="{% url 'create_test' %}">
       {% csrf_token %}
-      <input type="hidden" name="action" value="create_test" />
       <div class="single-form-adjusted" style="margin-bottom:1rem;">
         {% with ct_form as create_form %}
           {% if create_form %}
@@ -225,14 +225,13 @@
             <div class="form-group">
               <label for="{{ create_form.test_type.id_for_label }}">Type</label>
               {{ create_form.test_type }}
+              {% if create_form.test_type.errors %}
+              <ul class="errorlist"> {% for e in create_form.test_type.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+              {% endif %}
             </div>
             <div class="form-group">
-              <label for="{{ create_form.possible_mark.id_for_label }}">Max mark</label>
+              <label for="{{ form.possible_mark.id_for_label }}">Max mark</label>
               {{ create_form.possible_mark }}
-            </div>
-            <div class="form-group">
-              <label for="{{ create_form.weighting.id_for_label }}">Weight %</label>
-              {{ create_form.weighting }}
             </div>
             <div class="form-group">
               <label for="{{ create_form.submission_date.id_for_label }}">Date</label>
@@ -262,7 +261,7 @@
           {% endif %}
         {% endwith %}
         <button type="submit" class="btn btn-primary" style="align-self:flex-end">
-          <i data-lucide="plus" width="14" height="14"></i>
+          <i data-lucide="save" width="14" height="14"></i>
           Save test
         </button>
       </div>
@@ -275,7 +274,7 @@
   <div class="panel-card">
     <div class="panel-title">Log a single student's mark</div>
 
-    <form method="post" action="{% url 'teacher:test_insert' %}">
+    <form method="post" action="{% url 'test_insert' %}">
       {% csrf_token %}
       <div class="form-grid-bulk-adjusted" style="margin-bottom:1rem;">
         <div class="form-group">
@@ -283,8 +282,15 @@
           {{ form.students }}
         </div>
         <div class="form-group">
-          <label for="{{ form.tests.id_for_label }}">Test</label>
-          {{ form.tests }}
+          <label for="id_tests_single">Test</label>
+          <select name="tests" id="id_tests_single" onchange="updateTotal(this)">
+            <option value="">---------</option>
+            {% for test in form.tests.field.queryset %}
+              <option value="{{ test.pk }}" data-total="{{ test.possible_mark }}">
+                {{ test.test_description }}
+              </option>
+            {% endfor %}
+          </select>
         </div>
         <div class="form-group">
           <label for="id_mark_single">Mark achieved</label>
@@ -292,7 +298,7 @@
         </div>
         <div class="form-group">
           <label for="id_total_single">Total marks</label>
-          <input type="number" id="id_total_single" name="total" min="1" placeholder="e.g. 100" />
+          <input type="number" id="id_total_single" name="total" readonly />
         </div>
       </div>
       <button type="submit" class="btn btn-primary">Save mark</button>
@@ -309,7 +315,7 @@
       marks one by one later, or when a default mark applies to everyone.
     </p>
 
-    <form method="post" action="{% url 'teacher:test_insert_all' %}">
+    <form method="post" action="{% url 'test_insert_all' %}">
       {% csrf_token %}
       <div style="display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;align-items:flex-end;">
         <div class="form-group" style="flex:2;min-width:180px;">
@@ -350,6 +356,12 @@
       });
     });
   })();
+
+  function updateTotal(select) {
+    const opt = select.options[select.selectedIndex];
+    const total = opt.getAttribute('data-total') || '';
+    document.getElementById('id_total_single').value = total;
+  }
 
   lucide.createIcons();
 </script>

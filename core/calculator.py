@@ -1,12 +1,17 @@
 import bisect
-from decimal import Decimal, ROUND_HALF_EVEN
+from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 
 from core.constants import SubjectID
 
 
 def round_decimal(value: float, places: int = 0) -> float:
-    quantizer = Decimal("1." + "0" * places)
-    return float(Decimal(str(value)).quantize(quantizer, rounding=ROUND_HALF_EVEN))
+    if value is None or value == "": return 0.0
+
+    try:
+        quantizer = Decimal("1." + "0" * places) if places > 0 else Decimal("1")
+        return float(Decimal(str(value)).quantize(quantizer, rounding=ROUND_HALF_UP))
+    except InvalidOperation:
+        return 0.0
 
 
 def calculate_percentage(mark: float, total: float) -> float:

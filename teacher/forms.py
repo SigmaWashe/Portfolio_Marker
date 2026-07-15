@@ -1,23 +1,25 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.db.models import F
 
-from .models import Schools, Subject, Student, Teacher, Test
+from .models import Student, Teacher, Test
+from student.models import Schools, Subject
 from core.subjects import SUBJECTS, SUBJECT_FIELDS
+from core.utils import teachers_students
 import core.constants
 
 
 class SignupForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    name = forms.CharField(max_length=255)
+    surname = forms.CharField(max_length=255)
+
     school = forms.ModelChoiceField(queryset=Schools.objects.all(), required=True, label="Select School",
                                     widget=forms.Select(attrs={'class': 'searchable-select'}))
     
     subject = forms.ModelChoiceField(queryset=Subject.objects.all(), required=True, label="Teaching Subject",
                                      widget=forms.Select(attrs={'class': 'searchable-select'}))
-    
-
-    email = forms.EmailField()
-    name = forms.CharField(max_length=100)
-    surname = forms.CharField(max_length=100)
 
     class Meta:
         model = User
@@ -46,11 +48,13 @@ class SignupForm(UserCreationForm):
                                    surname=self.cleaned_data['surname'], school=self.cleaned_data['school'],
                                    subject=self.cleaned_data['subject'])
         return user
-    
 
-def get_students_for_teacher(teacher):
-    subject_field = SUBJECT_FIELDS.get(teacher.subject.id)
-    return Student.objects.filter(**{f'chosen_subjects__{subject_field}': True})
+
+"""
+def teachers_students(teacher):
+    return (Student.objects.filter(teacher_tests__teacher=teacher, school_id=F('teacher_tests__teacher__school_id'))
+            .distinct().order_by('surname'))
+"""
 
 
 class StudentForm(forms.Form):
@@ -63,10 +67,10 @@ class StudentForm(forms.Form):
         teacher = kwargs.pop('teacher', None)
         super().__init__(*args, **kwargs)
         if teacher:
-            self.fields['students'].queryset = get_students_for_teacher(teacher)
-            self.fields['students'].label_from_instance = lambda obj: f"{obj.user.get_full_name()} [{obj.exam_number}]"
-            self.fields['tests'].queryset = Test.objects.filter(subject=teacher.subject)
-            self.fields['tests'].label_from_instance = lambda obj: f"{obj.test_description}"
+            self.fields['students'].queryset = teachers_students(teacher)
+            self.fields['students'].label_from_instance = lambda obj: f"{obj.name} {obj.surname} [{obj.exam_num}]"
+            self.fields['tests'].queryset = Test.objects.filter(teacher=teacher, subject=teacher.subject).distinct()
+            self.fields['tests'].label_from_instance = lambda obj: f"{obj.test_description} total: ({obj.possible_mark})"
 
 
 class TestForm(forms.Form):
@@ -79,16 +83,17 @@ class TestForm(forms.Form):
         teacher = kwargs.pop('teacher', None)
         super().__init__(*args, **kwargs)
         if teacher:
-            self.fields['students'].queryset = get_students_for_teacher(teacher)
-            self.fields['students'].label_from_instance = lambda obj: f"{obj.user.get_full_name()} [{obj.exam_number}]"
-            self.fields['tests'].queryset = Test.objects.filter(subject=teacher.subject)
-            self.fields['tests'].label_from_instance = lambda obj: f"{obj.test_description} [{obj.test_type}]"
+            self.fields['students'].queryset = teachers_students(teacher)
+            self.fields['students'].label_from_instance = lambda obj: f"[{obj.exam_num}] {obj.name} {obj.surname}"
+            self.fields['tests'].queryset = Test.objects.filter(teacher=teacher.id, subject=teacher.subject)
+            self.fields['tests'].label_from_instance = lambda obj: f"{obj.test_description} total: ({obj.possible_mark})"
 
 
 class CreateTestForm(forms.Form):
-    tests_type       = forms.ChoiceField(choices=[], required=True, label="Test Type", widget=forms.Select(attrs={'class': 'searchable-select'}))
-    test_description = forms.CharField(max_length=255, required=True, label="Test Description / Topic")
+    test_type        = forms.ChoiceField(required=True, label="Test Type", choices=[], widget=forms.Select(attrs={'class': 'searchable-select'}))
+    test_description = forms.CharField(required=True, label="Test Description / Topic", max_length=255)
     submission_date  = forms.DateField(required=True, label="Submission Date", widget=forms.DateInput(attrs={'type': 'date'}))
+    possible_mark    = forms.IntegerField(required=True, label="Total", min_value=1, widget=forms.NumberInput(attrs={'type': 'number', 'min': '1'}))
 
     def __init__(self, *args, **kwargs):
         teacher = kwargs.pop('teacher', None)
@@ -105,17 +110,17 @@ class CreateTestForm(forms.Form):
             else: class_name = subject_name.replace(" ", "") if subject_name else ""
             target_class = getattr(core.constants, class_name, None)
             if target_class and hasattr(target_class, 'CHOICES'):
-                self.fields['tests_type'].choices = [(item[0], item[1]) for item in target_class.CHOICES]
+                self.fields['test_type'].choices = [(item[0], item[1]) for item in target_class.CHOICES]
 
 
 class CreateStudentForm(forms.Form):
-    first_name = forms.CharField(max_length=100)
-    last_name  = forms.CharField(max_length=100)
-    exam_num   = forms.IntegerField()
-    email      = forms.EmailField()
-    password   = forms.CharField(widget=forms.PasswordInput())
-    subject    = forms.ModelMultipleChoiceField(queryset=Subject.objects.all(), widget=forms.CheckboxSelectMultiple(), required=True, label="Subjects")
+    name     = forms.CharField(max_length=255)
+    surname  = forms.CharField(max_length=255)
+    exam_num = forms.IntegerField()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['subject'].label_from_instance = lambda obj: obj.subject
+
+
+class InsertMarks(forms.Form):
+    pass

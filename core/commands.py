@@ -8,6 +8,7 @@ SCHOOLS_CSV = os.path.join(BASE_DIR, 'static', 'IEB Schools.csv')
 
 def load_initial_data(sender, **kwargs):
     from student.models import Subject, Schools
+    from teacher.models import Schools as t_schools
 
     for subject_id, subject_name in SUBJECTS.items():
         Subject.objects.get_or_create(id=subject_id, defaults={'subject': subject_name})
@@ -20,3 +21,4 @@ def load_initial_data(sender, **kwargs):
         reader = csv.DictReader(f)
         for row in reader:
             Schools.objects.get_or_create(center_number=row['center_number'], defaults={'name_of_school': row['name_of_school']})
+            t_schools.objects.get_or_create(center_number=row['center_number'], defaults={'name_of_school': row['name_of_school']})

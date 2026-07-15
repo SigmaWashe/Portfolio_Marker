@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "teacher/base.html" %}
 {% block title %}Dashboard — Portfolio Marker{% endblock %}
 
 {% block content %}
@@ -7,7 +7,7 @@
     <h1>Good day, {{ teacher.name }}</h1>
     <p>Here's an overview of your {{ teacher.subject.subject }} class.</p>
   </div>
-  <a href="{% url 'teacher:student' %}" class="btn btn-primary btn-sm">
+  <a href="{% url 'student' %}" class="btn btn-primary btn-sm">
     <i data-lucide="users" width="14" height="14"></i>
     View students
   </a>
@@ -17,7 +17,7 @@
 <div class="stats">
   <div class="stat-card">
     <div class="stat-label">Total students</div>
-    <div class="stat-value">{{ current_students|length }}</div>
+    <div class="stat-value">{{ number_students }}</div>
     <div class="stat-sub">enrolled in {{ teacher.subject.subject }}</div>
   </div>
   <div class="stat-card">
@@ -33,7 +33,7 @@
 <div class="card">
   <div class="card-header">
     <span class="card-title">Student roster</span>
-    <span class="text-muted text-sm">{{ current_students|length }} student{{ current_students|length|pluralize }}</span>
+    <span class="text-muted text-sm">{{ number_students }} student{{ current_students|length|pluralize }}</span>
   </div>
 
   {% if current_students %}
@@ -50,9 +50,9 @@
         {% for s in current_students %}
         <tr>
           <td class="mono text-muted" style="font-size:12px;">{{ forloop.counter }}</td>
-          <td>{{ s.name }}</td>
+          <td>{{ s.full_name }}</td>
           <td>
-            <a href="{% url 'teacher:student' %}" class="btn btn-secondary btn-sm">View tests</a>
+            <a href="{% url 'student' %}" class="btn btn-secondary btn-sm">View tests</a>
           </td>
         </tr>
         {% endfor %}

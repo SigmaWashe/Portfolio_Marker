@@ -9,14 +9,10 @@ body {
   background-color: #FAFAF9;
   color: #1C1917;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-main {
-  flex: 1;
-  background: #FAFAF9;
-  padding: 2rem;
-  overflow-y: auto;
-}
+/* Note: auth pages center their form via .auth-main (see auth.css).
+   `main`/`body` are intentionally NOT flex-centered here, since this
+   stylesheet is also loaded on the dashboard/sidebar layout, where
+   content needs to flow top-to-bottom and fill the available width
+   (layout.css / subject.css own the real `.main` sizing there). */

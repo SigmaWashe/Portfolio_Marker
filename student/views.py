@@ -38,7 +38,7 @@ def signup(request):
             print(" FORM ERRORS:", form.errors.as_data())
     else:
         form = SignupForm()
-    return render(request, 'account/signup.html', {'form': form})
+    return render(request, 'student/signup.html', {'form': form})
 
 
 def logins(request):
@@ -50,7 +50,7 @@ def logins(request):
             return redirect('dashboard')
     else:
         form = AuthenticationForm()
-    return render(request, 'account/login.html', {'form': form})
+    return render(request, 'student/login.html', {'form': form})
 
 
 def logouts(request):
@@ -67,7 +67,7 @@ def select_subjects(request):
 
         if len(subject_ids) < 3:
             active_map = {sub.id: sub.subject for sub in Subject.objects.filter(id__in=subject_ids)}
-            return render(request, 'select_subjects.html', {
+            return render(request, 'student/select_subjects.html', {
                 'subjects': Subject.objects.all(),
                 'error': 'Please select at least 3 subjects.',
                 'active_map_json': json.dumps(active_map),
@@ -86,7 +86,7 @@ def select_subjects(request):
         if getattr(student.chosen_subjects, SUBJECT_FIELDS[sub.id], False)
     }
 
-    return render(request, 'select_subjects.html', {
+    return render(request, 'student/select_subjects.html', {
         'subjects': Subject.objects.all(),
         'active_map_json': json.dumps(active_map),
     })
@@ -103,15 +103,15 @@ def complete_profile(request):
         surname = request.POST.get('surname')
 
         if not exam_number or not name or not surname:
-            return render(request, 'account/complete_profile.html', {'error': 'All fields are required.'})
+            return render(request, 'student/complete_profile.html', {'error': 'All fields are required.'})
 
         if Student.objects.filter(exam_num=exam_number).exists():
-            return render(request, 'account/complete_profile.html', {'error': 'Exam number already registered.'})
+            return render(request, 'student/complete_profile.html', {'error': 'Exam number already registered.'})
 
         Student.objects.create(user=request.user, exam_num=exam_number, name=name, surname=surname)
         return redirect('dashboard')
 
-    return render(request, 'account/complete_profile.html')
+    return render(request, 'student/complete_profile.html')
 
 
 @login_required
@@ -133,7 +133,7 @@ def dashboard(request):
     avg = Test.objects.filter(student=student).aggregate(Avg('percentage'))
     avg_percentage = round(avg['percentage__avg'], 1) if avg['percentage__avg'] else None
 
-    return render(request, 'dashboard.html', {
+    return render(request, 'student/dashboard.html', {
         'student': student,
         'total_tests': total_tests,
         'avg_percentage': avg_percentage,
@@ -165,7 +165,7 @@ def subject(request, subject_name):
     ]
     test_choices = SUBJECT_CHOICES.get(subject_id, {}).get('choices', [])
 
-    return render(request, 'subject.html', {
+    return render(request, 'student/subject.html', {
         'student': student,
         'subject': sub,
         'tests': tests,

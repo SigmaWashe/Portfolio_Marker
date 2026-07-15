@@ -15,6 +15,11 @@ form {
   border-radius: 1rem;
   padding: 2rem;
   border: 0.5px solid #E7E5E4;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+form.wide-form {
+  max-width: 560px;
 }
 
 .logo-row {
@@ -52,16 +57,16 @@ form {
 }
 
 h3 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
+  font-size: 1.25rem; 
+  font-weight: 600; 
+  margin-bottom: 0.25rem; 
   color: #1C1917;
 }
 
 .subtitle {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: #78716C;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .error {
@@ -107,7 +112,7 @@ input[type="password"],
 input[type="email"] {
   display: block;
   width: 100%;
-  padding: 0.65rem 2.75rem 0.65rem 0.9rem;
+  padding: 0.65rem 0.9rem;
   border: 1.5px solid #C8C5C2;
   border-radius: 0.6rem;
   font-size: 0.95rem;
@@ -125,6 +130,10 @@ input[type="email"]:focus {
 .passwd-wrap {
   position: relative;
   display: block;
+}
+
+.passwd-wrap input {
+  padding-right: 2.75rem;
 }
 
 .show-passwd {
@@ -157,6 +166,7 @@ input[type="email"]:focus {
 .divider {
   display: flex;
   align-items: center;
+  width: 100%;
   gap: 10px;
   font-size: 0.78rem;
   color: #A8A29E;
@@ -176,6 +186,7 @@ input[type="email"]:focus {
   align-items: center;
   gap: 0.75rem;
   margin-top: 1.75rem;
+  width: 100%;
 }
 
 .button {
@@ -239,11 +250,6 @@ input[type="email"]:focus {
   background-color: #FAFAF9;
 }
 
-.button-google svg {
-  flex-shrink: 0;
-}
-
-/* ── Multi-step form ── */
 .steps {
   display: flex;
   align-items: center;
@@ -307,4 +313,118 @@ input[type="email"]:focus {
 
 .step-panel.active {
   display: block;
+}
+
+.role-panel { display: none; }
+.role-panel.active { display: block; }
+
+select.select-input {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid #C8C5C2;
+  border-radius: 0.6rem;
+  font-size: 0.875rem;
+  color: #1C1917;
+  background: #fff;
+  font-family: inherit;
+  appearance: none;
+  outline: none;
+  transition: border-color 0.2s;
+}
+select.select-input:focus {
+  border-color: #1E3A5F;
+}
+
+.searchable-select-wrap {
+  position: relative;
+  min-width: 0;
+}
+.searchable-select-wrap .select-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+.ss-search-input {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid #C8C5C2;
+  border-radius: 0.6rem;
+  font-size: 0.875rem;
+  color: #1C1917;
+  background: #fff;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.ss-search-input:focus { border-color: #1E3A5F; }
+.ss-search-input::placeholder { color: #1C1917; opacity: 1; }
+.ss-search-input.ss-placeholder-active { color: #78716C; }
+
+.ss-options {
+  display: none;
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  width: auto;
+  max-width: 320px;
+  box-sizing: border-box;
+  max-height: 220px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #fff;
+  border: 1.5px solid #C8C5C2;
+  border-radius: 0.6rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  padding: 0.3rem;
+}
+.ss-options.open { display: block; }
+
+.ss-option {
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.4rem;
+  font-size: 0.875rem;
+  color: #1C1917;
+  cursor: pointer;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+.ss-option:hover,
+.ss-option.ss-active {
+  background: #EEF2F7;
+}
+.ss-option.ss-selected {
+  font-weight: 600;
+  color: #1E3A5F;
+}
+.ss-no-results {
+  padding: 0.5rem 0.65rem;
+  font-size: 0.85rem;
+  color: #A8A29E;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+.field-row > label {
+  min-width: 0;
+  margin-bottom: 0;
+}
+@media (max-width: 560px) {
+  .field-row {
+    grid-template-columns: 1fr;
+  }
 }

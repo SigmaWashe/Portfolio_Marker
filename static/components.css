@@ -1,7 +1,7 @@
 /* ── Stats ── */
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
 }
@@ -150,14 +150,9 @@
 /* ── Mobile responsive ── */
 @media (max-width: 768px) {
   .stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 0.75rem;
     margin-bottom: 1.5rem;
-  }
-
-  /* Make third stat card span both columns */
-  .stats .stat-card:nth-child(3) {
-    grid-column: 1 / -1;
   }
 
   .subjects-grid {
@@ -175,11 +170,103 @@
     grid-template-columns: 1fr;
   }
 
-  .stats .stat-card:nth-child(3) {
-    grid-column: auto;
-  }
-
   .subjects-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Utility text helpers (used across dashboard/student tables) ── */
+.text-muted { color: #78716C; }
+.text-sm { font-size: 0.8rem; }
+.mono { font-family: 'DM Mono', monospace; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-sm {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+}
+
+.btn-secondary {
+  background: #EEF2F7;
+  color: #1E3A5F;
+}
+
+.btn-secondary:hover {
+  background: #DCE7F0;
+}
+
+/* ── Card header / body (bleed to the card's edges via negative margin,
+   so a header or body section can have its own padding independent of
+   the outer .card's default 1.5rem padding) ── */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -1.5rem -1.5rem 1.25rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 0.5px solid #E7E5E4;
+  border-radius: 1rem 1rem 0 0;
+}
+
+.card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1C1917;
+}
+
+.card-body {
+  margin: -1.5rem;
+  padding: 1.5rem;
+}
+
+/* ── Generic empty state (inside cards/tables, lighter than .empty-subjects) ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.75rem 1rem;
+  color: #A8A29E;
+  text-align: center;
+}
+
+.empty-state p {
+  font-size: 0.875rem;
+}
+
+/* ── Form error lists ── */
+.errorlist {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+}
+
+.errorlist li {
+  font-size: 0.78rem;
+  color: #b13535;
+  background: #faeaea;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.4rem;
+  margin-bottom: 0.25rem;
+}
+
+/* ── Page header heading (h1 used in dashboard/student, h2 elsewhere) ── */
+.page-header h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1C1917;
+}
+
+.page-header p {
+  font-size: 0.875rem;
+  color: #78716C;
+  margin-top: 0.2rem;
 }

@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
-class PortfolioMarkerConfig(AppConfig):
-    name = 'portfolio_marker'
+class StudentConfig(AppConfig):
+    name = 'student'
 
     def ready(self):
         from django.db.models.signals import post_migrate

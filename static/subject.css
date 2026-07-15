@@ -14,9 +14,13 @@
     }
     .sidebar-logo-text { font-size: 13px; font-weight: 600; color: #fff; }
     .nav-section {
-      font-size: 0.7rem; font-weight: 600; color: #5A7A99;
-      text-transform: uppercase; letter-spacing: 0.08em;
-      padding: 0.75rem 0.75rem 0.25rem; text-align: left;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #5A7A99;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.75rem 0.75rem 0.25rem;
+      text-align: left;
     }
     .nav-item {
       display: flex; align-items: center; gap: 10px;
