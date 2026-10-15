@@ -27,11 +27,11 @@ def build_data(g):
         "{oral_topic}": g._desc(AGS.ORAL), "{oral_date}": g._date(AGS.ORAL), "{oral_total}": g._total(AGS.ORAL),
         "{oral_mark}": g._mark(AGS.ORAL), "{oral_weight}": oral_weighted,
 
-        "{visual_topic}": g._desc(AGS.VISUAL), "{visual_date}": g._date(AGS.VISUAL), "{visual_total}": g._total(AGS.VISUAL),
-        "{visual_mark}": g._mark(AGS.VISUAL), "{visual_weight}": vis_weighted,
+        "{vis_topic}": g._desc(AGS.VISUAL), "{vis_date}": g._date(AGS.VISUAL), "{vis_total}": g._total(AGS.VISUAL),
+        "{vis_mark}": g._mark(AGS.VISUAL), "{vis_weight}": vis_weighted,
 
-        "{wp_topic}": g._desc(AGS.WRITING_PIECE), "{prac_date}": g._date(AGS.WRITING_PIECE), "{prac_total}": g._total(AGS.WRITING_PIECE),
-        "{wp_mark}": g._mark(AGS.WRITING_PIECE), "{prac_weight}": wp_weighted,
+        "{wp_topic}": g._desc(AGS.WRITING_PIECE), "{wp_date}": g._date(AGS.WRITING_PIECE), "{wp_total}": g._total(AGS.WRITING_PIECE),
+        "{wp_mark}": g._mark(AGS.WRITING_PIECE), "{wp_weight}": wp_weighted,
 
         "{total}": prelim_weighted + t1_weighted + t2_weighted + oral_weighted + vis_weighted + wp_weighted,
     }

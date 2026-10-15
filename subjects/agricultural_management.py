@@ -31,8 +31,8 @@ def build_data(g):
         "{oral_topic}": g._desc(AGM.ORAL), "{oral_date}": g._date(AGM.ORAL), "{oral_total}": g._total(AGM.ORAL),
         "{oral_mark}": g._mark(AGM.ORAL), "{oral_weight}": oral_weighted,
 
-        "{visual_topic}": g._desc(AGM.VISUAL), "{visual_date}": g._date(AGM.VISUAL), "{visual_total}": g._total(AGM.VISUAL),
-        "{visual_mark}": g._mark(AGM.VISUAL), "{visual_weight}": vis_weighted,
+        "{vis_topic}": g._desc(AGM.VISUAL), "{vis_date}": g._date(AGM.VISUAL), "{vis_total}": g._total(AGM.VISUAL),
+        "{vis_mark}": g._mark(AGM.VISUAL), "{vis_weight}": vis_weighted,
 
         "{prac_topic}": g._desc(AGM.PRACTICAL), "{prac_date}": g._date(AGM.PRACTICAL), "{prac_total}": g._total(AGM.PRACTICAL),
         "{prac_mark}": g._mark(AGM.PRACTICAL), "{prac_weight}": prac_weighted,

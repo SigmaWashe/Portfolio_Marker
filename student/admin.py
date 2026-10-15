@@ -1,6 +1,5 @@
 from django.contrib import admin
-from student.models import Subject, Student, Test
+from student.models import *
 
-admin.site.register(Subject)
 admin.site.register(Student)
 admin.site.register(Test)

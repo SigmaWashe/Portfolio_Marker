@@ -16,7 +16,7 @@ def build_data(g):
     pat_A  = g._weighted(DramaticArts.PAT_SECTION_A)
     pat_B  = g._weighted(DramaticArts.PAT_SECTION_B)
 
-    exam = str(g.student.exam_num).zfill(13)
+    exam = f"{g.student.exam_num} "
 
     return {
         "{NAME}": g.student.name, "{SURNAME}": g.student.surname, "{SCHOOL}": getattr(g.student, 'school', ''),
@@ -32,10 +32,10 @@ def build_data(g):
         "{theory1_desc}": g._desc(DramaticArts.THEORY, 0), "{theory1_mark}": g._mark(DramaticArts.THEORY, 0),
         "{theory2_desc}": g._desc(DramaticArts.THEORY, 1), "{theory2_mark}": g._mark(DramaticArts.THEORY, 1),
         "{theory3_desc}": g._desc(DramaticArts.THEORY, 2), "{theory3_mark}": g._mark(DramaticArts.THEORY, 2),
-        "{prelim}_desc}": g._desc(DramaticArts.PRELIM),    "{prelim}_mark}": g._mark(DramaticArts.PRELIM),
+        "{prelim_desc}" : g._desc(DramaticArts.PRELIM),    "{prelim_mark}" : g._mark(DramaticArts.PRELIM),
         "{theory_mark}" : theory,
 
-        "{sba_weight}"  : theory + prac,
+        "{sba_mark}" : theory + prac, "{sba_weight}"  : theory1 + prac1 + theory2 + prac2 + theory3 + prac3 + prelim,
 
         "{secA_desc}"   : g._desc(DramaticArts.PAT_SECTION_A), "{secA_mark}": g._mark(DramaticArts.PAT_SECTION_A),
         "{secB_desc}"   : g._desc(DramaticArts.PAT_SECTION_B), "{secB_mark}": g._mark(DramaticArts.PAT_SECTION_B),

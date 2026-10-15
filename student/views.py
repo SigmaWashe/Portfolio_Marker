@@ -2,20 +2,20 @@ import datetime
 import json
 
 from django.db.models import Avg
+from django.forms import modelformset_factory
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from student.models import Test, Student, Subject, Schools, ChosenSubjects
+from common.models import Schools
 from core.subjects import *
 from core.base import ReportGenerator, REPORT_TEMPLATES
 from core.utils import get_center_number
-from student.forms import SignupForm
-
+from student.forms import *
 
 def signup(request):
     if request.method == 'POST':
@@ -30,72 +30,39 @@ def signup(request):
                 user.student.school = school.name_of_school
                 user.student.save()
 
-            ChosenSubjects.objects.get_or_create(student=user.student)
+            # Student.subjects.set([9, 10, 15])
 
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect('select_subjects')
+            return redirect('selected')
         else:
             print(" FORM ERRORS:", form.errors.as_data())
     else:
         form = SignupForm()
+
     return render(request, 'student/signup.html', {'form': form})
 
 
-def logins(request):
+def signin(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect('dashboard')
+            return redirect('student:dashboard')
     else:
         form = AuthenticationForm()
-    return render(request, 'student/login.html', {'form': form})
+    return render(request, 'student/signin.html', {'form': form})
 
 
 def logouts(request):
     logout(request)
-    return redirect('login')
+    return redirect('student:login')
 
 
-@login_required
-def select_subjects(request):
-    student = request.user.student
-
-    if request.method == 'POST':
-        subject_ids = [int(i) for i in request.POST.getlist('subjects')]
-
-        if len(subject_ids) < 3:
-            active_map = {sub.id: sub.subject for sub in Subject.objects.filter(id__in=subject_ids)}
-            return render(request, 'student/select_subjects.html', {
-                'subjects': Subject.objects.all(),
-                'error': 'Please select at least 3 subjects.',
-                'active_map_json': json.dumps(active_map),
-            })
-
-        chosen = student.chosen_subjects
-        for subject_id, field in SUBJECT_FIELDS.items():
-            setattr(chosen, field, subject_id in subject_ids)
-        chosen.save()
-        student.save()
-        return redirect('dashboard')
-
-    active_map = {
-        sub.id: sub.subject
-        for sub in Subject.objects.all()
-        if getattr(student.chosen_subjects, SUBJECT_FIELDS[sub.id], False)
-    }
-
-    return render(request, 'student/select_subjects.html', {
-        'subjects': Subject.objects.all(),
-        'active_map_json': json.dumps(active_map),
-    })
-
-
-@login_required
+@login_required(login_url='student:login')
 def complete_profile(request):
     if hasattr(request.user, 'student'):
-        return redirect('dashboard')
+        return redirect('student:dashboard')
 
     if request.method == 'POST':
         exam_number = request.POST.get('exam_number')
@@ -109,75 +76,110 @@ def complete_profile(request):
             return render(request, 'student/complete_profile.html', {'error': 'Exam number already registered.'})
 
         Student.objects.create(user=request.user, exam_num=exam_number, name=name, surname=surname)
-        return redirect('dashboard')
+        return redirect('student:dashboard')
 
     return render(request, 'student/complete_profile.html')
 
 
-@login_required
+@login_required(login_url='student:login')
+def select_subjects(request):
+    student = request.user.student
+    current_subjects = [
+        {
+            'id': subject.id,
+            'name': subject.subject,
+            'icon': SUBJECT_CHOICES.get(subject.id, {}).get('icon', 'book'),
+            'slug': subject.subject.lower().replace(' ', '-'),
+            'average': float(
+                Test.objects.filter(subject=subject.id).aggregate(average=Avg("percentage", default=0))["average"]),
+        }
+        for subject in student.subjects.all()
+    ]
+
+    if request.method == 'POST':
+        form = SubjectForm(request.POST, student=student)
+        if form.is_valid():
+            selected_subjects = form.cleaned_data['subjects']
+            Test.objects.filter(student=student).exclude(subject__in=selected_subjects).delete()
+
+            student.subjects.set(selected_subjects)
+            return redirect('student:dashboard')
+    else: form = SubjectForm(student=student)
+
+    context = { 'form': form, 'student': student, 'current_subjects': current_subjects, }
+
+    return render(request, 'student/select_subjects.html', context)
+
+
+@login_required(login_url='student:login')
 def dashboard(request):
     student = request.user.student
 
-    active_subjects = [
+    current_subjects = [
         {
-            'id': sub.id,
-            'name': sub.subject,
-            'icon': SUBJECT_CHOICES.get(sub.id, {}).get('icon', 'book'),
-            'slug': sub.subject.lower().replace(' ', '-'),
+            'id'  : subject.id,
+            'name': subject.subject,
+            'icon': SUBJECT_CHOICES.get(subject.id, {}).get('icon', 'book'),
+            'slug': subject.subject.lower().replace(' ', '-'),
+            'report' : subject.id in REPORT_TEMPLATES,
+            'average': float(Test.objects.filter(subject=subject.id).aggregate(average=Avg("percentage", default=0))["average"]),
         }
-        for sub in Subject.objects.all()
-        if getattr(student.chosen_subjects, SUBJECT_FIELDS.get(sub.id, ''), False)
+        for subject in student.subjects.all()
     ]
 
     total_tests = Test.objects.filter(student=student).count()
-    avg = Test.objects.filter(student=student).aggregate(Avg('percentage'))
-    avg_percentage = round(avg['percentage__avg'], 1) if avg['percentage__avg'] else None
+    avg = Test.objects.filter(student=student).aggregate(Avg('weighted'))
 
-    return render(request, 'student/dashboard.html', {
+    avg_percentage = round(avg['weighted__avg'], 1) if avg['weighted__avg'] else None
+
+    context =  {
         'student': student,
         'total_tests': total_tests,
         'avg_percentage': avg_percentage,
-        'active_subjects': active_subjects,
-    })
+        'current_subjects': current_subjects,
+    }
+
+    return render(request, 'student/dashboard.html', context)
 
 
-@login_required
+@login_required(login_url='student:login')
 def subject(request, subject_name):
     student = request.user.student
-    sub = Subject.objects.get(subject__iexact=subject_name.replace('-', ' '))
-    subject_id = sub.id
+    subject = Subject.objects.get(subject__iexact=subject_name.replace('-', ' '))
 
-    tests = Test.objects.filter(student=student, subject_id=subject_id).order_by('submission_date')
+    tests = Test.objects.filter(student=student, subject_id=subject.id).order_by('date')
 
-    for test in tests: test.symbol_info = assign_symbol(test.percentage, as_dict=True)
+    total_weighted = sum(test.weighted for test in tests)
 
-    total_weighted = sum(t.weighted_mark for t in tests)
-
-    active_subjects = [
+    current_subjects = [
         {
-            'id': s.id,
-            'name': s.subject,
-            'icon': SUBJECT_CHOICES.get(s.id, {}).get('icon', 'book'),
-            'slug': s.subject.lower().replace(' ', '-'),
+            'id': subject.id,
+            'name': subject.subject,
+            'icon': SUBJECT_CHOICES.get(subject.id, {}).get('icon', 'book'),
+            'slug': subject.subject.lower().replace(' ', '-'),
         }
-        for s in Subject.objects.all()
-        if getattr(student.chosen_subjects, SUBJECT_FIELDS.get(s.id, ''), False)
+        for subject in student.subjects.all()
     ]
-    test_choices = SUBJECT_CHOICES.get(subject_id, {}).get('choices', [])
+    test_choices = SUBJECT_CHOICES.get(subject.id, {}).get('choices', [])
 
-    return render(request, 'student/subject.html', {
+    TestsFormset = modelformset_factory(Test, form=UpdateTests, extra=0)
+    formset = TestsFormset(queryset=tests, form_kwargs={'subject': subject.id})
+
+    context = {
         'student': student,
-        'subject': sub,
+        'subject': subject,
+        'formset': formset,
         'tests': tests,
         'total_weighted': round_decimal(total_weighted, 2),
-        'active_subjects': active_subjects,
+        'current_subjects': current_subjects,
         'test_choices': test_choices,
-        'report_available': subject_id in REPORT_TEMPLATES,
-    })
+        'report_available': subject.id in REPORT_TEMPLATES,
+    }
+
+    return render(request, 'student/subject.html', context)
 
 
-@login_required
-@require_POST
+@login_required(login_url='student:login')
 def subject_insert(request, subject_name):
     student = request.user.student
     sub = Subject.objects.get(subject__iexact=subject_name.replace('-', ' '))
@@ -189,27 +191,18 @@ def subject_insert(request, subject_name):
     mark = float(request.POST['mark'])
     total = int(request.POST['total'])
     date_str = request.POST.get('submission_date')
-    submission_date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else timezone.now().date()
+    date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else timezone.now().date()
 
     percentage, weighted = calc(test_id, mark, total)
 
-    Test.objects.create(
-        student=student,
-        subject_id=subject_id,
-        test_type=test_id,
-        test_description=desc,
-        actual_mark=mark,
-        possible_mark=total,
-        weighted_mark=round_decimal(weighted, 2),
-        percentage=round_decimal(percentage, 2),
-        symbol=assign_symbol(percentage),
-        submission_date=submission_date,
-    )
-    return redirect('subject', subject_name=subject_name)
+    Test.objects.create(student=student, subject_id=subject_id, type=test_id, description=desc, mark=mark, total=total,
+                        weighted=round_decimal(weighted, 2),  percentage=round_decimal(percentage, 2),
+                        symbol=assign_symbol(percentage), date=date,)
+
+    return redirect('student:subject', subject_name=subject_name)
 
 
-@login_required
-@require_POST
+@login_required(login_url='student:login')
 def subject_insert_all(request, subject_name):
     student = request.user.student
     sub = Subject.objects.get(subject__iexact=subject_name.replace('-', ' '))
@@ -227,33 +220,67 @@ def subject_insert_all(request, subject_name):
             continue
         submission_date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else timezone.now().date()
         percentage, weighted = calc(int(test_id), float(mark), int(total))
-        Test.objects.create(
-            student=student,
-            subject_id=subject_id,
-            test_type=int(test_id),
-            test_description=desc,
-            actual_mark=float(mark),
-            possible_mark=int(total),
-            weighted_mark=round_decimal(weighted, 2),
-            percentage=round_decimal(percentage, 2),
-            symbol=assign_symbol(percentage),
-            submission_date=submission_date,
-        )
-    return redirect('subject', subject_name=subject_name)
+        Test.objects.create(student=student, subject_id=subject_id, type=int(test_id), description=desc, mark=float(mark),
+                            total=int(total), weighted=round_decimal(weighted, 2), percentage=round_decimal(percentage, 2),
+                            symbol=assign_symbol(percentage), date=submission_date,)
+    return redirect('student:subject', subject_name=subject_name)
 
 
-@login_required
-@require_POST
+@login_required(login_url='student:login')
+def manage_tests(request, subject_name):
+    student = request.user.student
+    subject = get_object_or_404(Subject, subject__iexact=subject_name.replace('-', ' '))
+    tests = Test.objects.filter(student=student, subject=subject).order_by('date')
+    calculator = SUBJECT_CALC.get(subject.id)
+
+    TestsFormset = modelformset_factory(Test, form=UpdateTests, extra=0)
+
+    if request.method == 'POST':
+        formset = TestsFormset(request.POST, queryset=tests, form_kwargs={'subject':subject.id})
+
+        if formset.is_valid():
+            for form in formset:
+                if form.cleaned_data:
+                    type = int(form.cleaned_data.get('type'))
+                    date = form.cleaned_data.get('date')
+                    mark = float(form.cleaned_data.get('mark') or 0)
+                    total = int(form.cleaned_data.get('total') or 50)
+                    description = form.cleaned_data.get('description')
+                    percentage, weighted = calculator(type or 1, mark, total)
+
+                    Test.objects.update_or_create(id=form.instance.pk, student=student, subject=subject, defaults=
+                    {'type': type, 'mark': mark, 'total': total, 'weighted': round_decimal(weighted, 2),
+                     'date': date, 'percentage': round_decimal(percentage, 2), 'symbol': assign_symbol(percentage), 'description': description})
+
+            return redirect('student:subject', subject_name=subject_name)
+    else:
+        formset = TestsFormset(queryset=tests, form_kwargs={'subject':subject.id})
+
+    total_weighted = sum(t.weighted for t in tests)
+
+    context = {
+        'student': student,
+        'formset': formset,
+        'subject': subject,
+        'tests'  : tests,
+        'total_weighted': round_decimal(total_weighted, 2),
+        'report_available': subject.id in REPORT_TEMPLATES,
+    }
+
+    return render(request, 'student/subject.html', context)
+
+
+@login_required(login_url='student:login')
 def subject_delete(request, subject_name):
     student = request.user.student
     sub = Subject.objects.get(subject__iexact=subject_name.replace('-', ' '))
 
     record_id = int(request.POST['id'])
     Test.objects.filter(student=student, subject_id=sub.id, test_id=record_id).delete()
-    return redirect('subject', subject_name=subject_name)
+    return redirect('student:subject', subject_name=subject_name)
 
 
-@login_required
+@login_required(login_url='student:login')
 def preview_report(request, subject_name):
     student = request.user.student
     sub = Subject.objects.get(subject__iexact=subject_name.replace('-', ' '))
@@ -266,15 +293,12 @@ def preview_report(request, subject_name):
         return HttpResponse("No report template available for this subject yet.", status=400)
 
     buffer = gen.generate(subject_id)
-    response = HttpResponse(
-        buffer,
-        content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    )
+    response = HttpResponse(buffer, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     response['Content-Disposition'] = 'inline; filename="preview.docx"'
     return response
 
 
-@login_required
+@login_required(login_url='student:login')
 def generate_report(request, subject_name):
     student = request.user.student
     sub = Subject.objects.get(subject__iexact=subject_name.replace('-', ' '))

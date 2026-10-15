@@ -1,165 +1,146 @@
+{% extends "student/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Select Subjects</title>
-  <link rel="stylesheet" href="{% static 'base.css' %}" />
-  <link rel="stylesheet" href="{% static 'layout.css' %}" />
-  <link rel="stylesheet" href="{% static 'components.css' %}" />
-  <style>
-    .subject-selector {
-      display: flex;
-      gap: 0.65rem;
-      align-items: center;
-      margin-bottom: 1.25rem;
-    }
 
-    .subject-selector select {
-      flex: 1;
-      padding: 0.65rem 0.9rem;
-      border: 1.5px solid #C8C5C2;
-      border-radius: 0.6rem;
-      font-size: 0.9rem;
-      color: #1C1917;
-      background: #fff;
-      font-family: inherit;
-      appearance: none;
-      outline: none;
-      transition: border-color 0.2s;
-    }
+{% block title %}Select Subjects - Portfolio Marker{% endblock %}
 
-    .subject-selector select:focus {
-      border-color: #1E3A5F;
-    }
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'auth.css' %}" />
+{% endblock %}
 
-    .btn-add {
-      padding: 0.65rem 1.1rem;
-      background: #1E3A5F;
-      color: #fff;
-      border: none;
-      border-radius: 0.6rem;
-      font-size: 0.875rem;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      white-space: nowrap;
-      transition: background 0.2s;
-    }
-
-    .btn-add:hover { background: #162D4A; }
-
-    .selected-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-      min-height: 48px;
-    }
-
-    .selected-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.65rem 0.9rem;
-      background: #EEF2F7;
-      border: 1.5px solid #1E3A5F;
-      border-radius: 0.6rem;
-      font-size: 0.875rem;
-      color: #1C1917;
-      font-weight: 500;
-    }
-
-    .btn-remove {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #b13535;
-      font-size: 1rem;
-      font-weight: 700;
-      line-height: 1;
-      padding: 0 0.25rem;
-      font-family: inherit;
-      transition: color 0.2s;
-    }
-
-    .btn-remove:hover { color: #8b1a1a; }
-
-    .empty-note {
-      font-size: 0.8rem;
-      color: #A8A29E;
-      padding: 0.5rem 0;
-    }
-
-    .count-note {
-      font-size: 0.8rem;
-      color: #57534E;
-      margin-bottom: 1rem;
-    }
-
-    .count-note span {
-      font-weight: 600;
-      color: #1E3A5F;
-    }
-
-    .error-inline {
-      font-size: 0.8rem;
-      color: #b13535;
-      margin-top: 0.35rem;
-      display: none;
-    }
-  </style>
-</head>
-<body>
-  <main>
-    <form method="POST" action="{% url 'select_subjects' %}" id="subjects-form">
-      {% csrf_token %}
+{% block content %}
+<form method="POST" class="full-page">
+    {% csrf_token %}
 
       <div class="logo-row">
-        <div class="logo-mark">PM</div>
-        <div class="logo-text">Portfolio Marker</div>
+          <div class="logo-mark">PM</div>
+          <div class="logo-text">Portfolio Marker</div>
       </div>
 
       <div class="accent-bar"></div>
-      <h3>Your subjects</h3>
+    <h3>Your subjects</h3>
 
-      {% if error %}
-        <p class="error">{{ error }}</p>
-      {% endif %}
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+    {{ form.non_field_errors }}
 
-      <p class="subtitle">Select the subjects you are doing this year.</p>
+    <p class="subtitle">Select the subjects you are doing this year.</p>
 
-      <div class="count-note">
-        <span id="count">0</span> subject(s) selected &mdash; minimum 3 required
-      </div>
+    <label for="{{ form.subjects.id_for_label }}" style="margin-bottom: 0.4rem;">
+        <span>{{ form.subjects.label }}</span>
+    </label>
+    {{ form.subjects }}
+    {{ form.subjects.errors }}
 
-      <!-- Dropdown + Add button -->
-      <div class="subject-selector">
-        <select id="subject-dropdown">
-          <option value="">-- Select a subject --</option>
-          {% for subject in subjects %}
-            <option value="{{ subject.id }}" data-name="{{ subject.subject }}">
-              {{ subject.subject }}
-            </option>
-          {% endfor %}
-        </select>
-        <button type="button" class="btn-add" onclick="addSubject()">Add</button>
-      </div>
-      <div class="error-inline" id="duplicate-error">You have already added this subject.</div>
+    <div class="button-wrap">
+        <button type="submit" class="button">Continue to dashboard</button>
+    </div>
+</form>
 
-      <!-- Selected subjects list -->
-      <div class="selected-list" id="selected-list">
-        <p class="empty-note" id="empty-note">No subjects added yet.</p>
-      </div>
+<script>
+console.log('select_subjects script running');
+document.querySelectorAll('select.searchable-select[multiple]').forEach(select => {
+  const options = [...select.options].filter(o => o.value);
 
-      <!-- Hidden inputs submitted with form -->
-      <div id="hidden-inputs"></div>
+  const wrap = document.createElement('div');
+  wrap.className = 'searchable-select-wrap';
+  const box = document.createElement('div');
+  box.className = 'ss-box';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'ss-search-input';
+  input.autocomplete = 'off';
+  const list = document.createElement('div');
+  list.className = 'ss-options';
 
-      <div class="button-wrap">
-        <button type="submit" class="button" onclick="return validateForm()">Continue to dashboard</button>
-      </div>
-    </form>
-  </main>
-</body>
-</html>
+  select.classList.add('select-input');
+  select.tabIndex = -1;
+  select.before(wrap);
+  box.append(input);
+  wrap.append(select, box, list);
+
+  let visible = [], activeIdx = 0;
+
+  function renderChips() {
+    box.querySelectorAll('.ss-chip').forEach(c => c.remove());
+    options.filter(o => o.selected).forEach(o => {
+      const chip = document.createElement('span');
+      chip.className = 'ss-chip';
+      chip.textContent = o.text.trim();
+      const x = document.createElement('button');
+      x.type = 'button';
+      x.className = 'ss-chip-x';
+      x.textContent = '×';
+      x.addEventListener('mousedown', e => { e.preventDefault(); toggle(o); });
+      chip.append(x);
+      box.insertBefore(chip, input);
+    });
+    input.placeholder = select.selectedOptions.length ? '' : 'Search subjects…';
+  }
+
+  function render() {
+    const q = input.value.trim().toLowerCase();
+    visible = options.filter(o => o.text.toLowerCase().includes(q));
+    list.innerHTML = '';
+    if (!visible.length) {
+      list.innerHTML = '<div class="ss-no-results">No matches</div>';
+      return;
+    }
+    activeIdx = Math.max(0, Math.min(activeIdx, visible.length - 1));
+    visible.forEach((o, i) => {
+      const row = document.createElement('div');
+      row.className = 'ss-option' + (o.selected ? ' ss-selected' : '') + (i === activeIdx ? ' ss-active' : '');
+      row.textContent = o.text.trim();
+      row.addEventListener('mousedown', e => { e.preventDefault(); toggle(o); });
+      list.appendChild(row);
+    });
+    const a = list.children[activeIdx];
+    if (a && a.scrollIntoView) a.scrollIntoView({ block: 'nearest' });
+  }
+
+  function toggle(o) {
+    o.selected = !o.selected;
+    input.value = '';
+    renderChips();
+    render();
+  }
+
+  const open = () => { list.classList.add('open'); render(); };
+  const close = () => list.classList.remove('open');
+
+  box.addEventListener('mousedown', e => {
+    if (e.target !== input && !e.target.classList.contains('ss-chip-x')) {
+      e.preventDefault();
+      input.focus();
+    }
+  });
+  input.addEventListener('focus', open);
+  input.addEventListener('click', open);
+  input.addEventListener('blur', () => { close(); input.value = ''; activeIdx = 0; });
+  input.addEventListener('input', () => { activeIdx = 0; open(); });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!list.classList.contains('open')) open();
+      activeIdx = Math.min(activeIdx + 1, visible.length - 1);
+      render();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIdx = Math.max(activeIdx - 1, 0);
+      render();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (visible[activeIdx]) toggle(visible[activeIdx]);
+    } else if (e.key === 'Escape') {
+      close();
+    } else if (e.key === 'Backspace' && !input.value) {
+      const sel = options.filter(o => o.selected);
+      if (sel.length) toggle(sel[sel.length - 1]);
+    }
+  });
+
+  select.addEventListener('focus', () => input.focus());
+  renderChips();
+});
+</script>
+{% endblock %}

@@ -1,14 +1,7 @@
-import io
-import os
-import tempfile
+import io, os, tempfile, subprocess
 
 from docx import Document
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL
-from docx2pdf import convert
-
-from core.calculator import assign_symbol, calculate_percentage
-from core.utils import format_exam_date
 from core.subjects import BUILDERS, REPORT_TEMPLATES
 
 
@@ -25,50 +18,43 @@ class ReportGenerator:
 
     def _mark(self, test_type, result_pos=0):
         try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
-            return t.actual_mark if t.actual_mark is not None else '' or 0
+            t = self.tests.filter(type=test_type).order_by('weighted')[result_pos]
+            return t.mark if t.mark is not None else '' or 0
         except IndexError:
             return '' or 0
 
     def _total(self, test_type, result_pos=0):
         try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
-            return t.possible_mark if t.possible_mark is not None else '' or 0
+            t = self.tests.filter(type=test_type).order_by('weighted')[result_pos]
+            return t.total if t.total is not None else '' or 0
         except IndexError:
             return '' or 0
 
     def _desc(self, test_type, result_pos=0, default=''):
         try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
-            return t.test_description if t.test_description is not None else ''
+            t = self.tests.filter(type=test_type).order_by('weighted')[result_pos]
+            return t.description if t.description is not None else ''
         except IndexError:
             return default
 
     def _weighted(self, test_type, result_pos=0):
         try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
-            return t.weighted_mark if t.weighted_mark is not None else '' or 0
+            t = self.tests.filter(type=test_type).order_by('weighted')[result_pos]
+            return t.weighted if t.weighted is not None else '' or 0
         except IndexError:
             return '' or 0
 
     def _perc(self, test_type, result_pos=0):
         try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
+            t = self.tests.filter(type=test_type).order_by('weighted')[result_pos]
             return t.percentage if t.percentage is not None else '' or 0
         except IndexError:
             return '' or 0
 
-    def _sym(self, test_type, result_pos=0, default=1):
-        try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
-            return t.symbol if t.symbol else default
-        except IndexError:
-            return default
-
     def _date(self, test_type, result_pos=0):
         try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
-            return str(t.submission_date) if t.submission_date is not None else ''
+            t = self.tests.filter(type=test_type).order_by('weighted')[result_pos]
+            return str(t.date) if t.date is not None else ''
         except IndexError:
             return ''
 
@@ -130,7 +116,17 @@ class ReportGenerator:
             pdf_path = os.path.join(tmp, 'report.pdf')
             doc.save(docx_path)
 
-            convert(docx_path, pdf_path)
+            subprocess.run(
+                [
+                    'soffice',
+                    f'-env:UserInstallation=file://{tmp}/lo_profile',
+                    '--headless',
+                    '--convert-to', 'pdf',
+                    '--outdir', tmp,
+                    docx_path,
+                ],
+                check=True, timeout=60, capture_output=True,
+            )
 
             with open(pdf_path, 'rb') as f:
                 return io.BytesIO(f.read())

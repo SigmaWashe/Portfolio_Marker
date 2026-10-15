@@ -350,23 +350,54 @@ select.select-input:focus {
   clip: rect(0, 0, 0, 0);
   border: 0;
 }
-.ss-search-input {
-  display: block;
-  width: 100%;
-  padding: 0.6rem 0.85rem;
+.ss-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 0.35rem 0.6rem;
   border: 1.5px solid #C8C5C2;
   border-radius: 0.6rem;
-  font-size: 0.875rem;
-  color: #1C1917;
   background: #fff;
-  font-family: inherit;
-  outline: none;
-  cursor: pointer;
+  cursor: text;
   transition: border-color 0.2s;
 }
-.ss-search-input:focus { border-color: #1E3A5F; }
-.ss-search-input::placeholder { color: #1C1917; opacity: 1; }
-.ss-search-input.ss-placeholder-active { color: #78716C; }
+.ss-box:focus-within { border-color: #1E3A5F; }
+
+.ss-box input.ss-search-input {
+  flex: 1;
+  width: auto;
+  min-width: 100px;
+  padding: 0.25rem 0;
+  border: none;
+  border-radius: 0;
+  font-size: 0.875rem;
+  color: #1C1917;
+  background: transparent;
+}
+.ss-box input.ss-search-input::placeholder { color: #78716C; opacity: 1; }
+
+.ss-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.2rem 0.3rem 0.2rem 0.6rem;
+  background: #EEF2F7;
+  color: #1E3A5F;
+  border-radius: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.ss-chip-x {
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  color: #1E3A5F;
+  opacity: 0.6;
+  padding: 0 0.25rem;
+}
+.ss-chip-x:hover { opacity: 1; }
 
 .ss-options {
   display: none;
@@ -376,7 +407,7 @@ select.select-input:focus {
   left: 0;
   right: 0;
   width: auto;
-  max-width: 320px;
+  max-width: none;
   box-sizing: border-box;
   max-height: 220px;
   overflow-y: auto;

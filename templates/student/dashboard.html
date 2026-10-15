@@ -1,129 +1,107 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
-  <link rel="stylesheet" href="{% static 'base.css' %}" />
-  <link rel="stylesheet" href="{% static 'layout.css' %}" />
-  <link rel="stylesheet" href="{% static 'components.css' %}" />
-  <script src="https://unpkg.com/lucide@latest"></script>
-</head>
-<body>
-  <div class="layout">
+{% extends "student/base.html" %}
+{% block title %}Dashboard — Portfolio Marker{% endblock %}
 
-    <!-- Desktop sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-logo" onclick="toggleSidebar()">
-        <div class="sidebar-logo-mark">PM</div>
-        <div class="sidebar-logo-text">Portfolio Marker</div>
-      </div>
+{% block content %}
+<div class="topbar">
+    <div class="topbar-left">
+        <h2>Hello, {{ student.name }} {{ student.surname }}</h2>
+        <p>Exam Number: {{ student.exam_num }}</p>
+    </div>
+    <div class="avatar">{{ student.name|first }}{{ student.surname|first }}</div>
+</div>
 
-      <div class="nav-section">Menu</div>
-      <a href="{% url 'dashboard' %}" class="nav-item active">
-        <i data-lucide="layout-dashboard" width="22" height="22"></i>
-        <span class="nav-label">Dashboard</span>
-      </a>
+<!-- Stat tiles -->
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-label">Current Subjects</div>
+        <div class="stat-value">{{ current_subjects|length }}</div>
+        <div class="stat-sub">This year</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Average %</div>
+        <div class="stat-value">{% if avg_percentage %}{{ avg_percentage }}%{% else %}—{% endif %}</div>
+        <div class="stat-sub">Overall</div>
+    </div>
+</div>
 
-      {% if active_subjects %}
-        <div class="nav-section">Subjects</div>
-        {% for subject in active_subjects %}
-          <a href="{% url 'subject' subject.name|slugify %}" class="nav-item" title="{{ subject.name }}">
-            <i data-lucide="{{ subject.icon }}" width="22" height="22"></i>
-            <span class="nav-label">{{ subject.name }}</span>
-          </a>
-        {% endfor %}
-      {% endif %}
 
-      <div class="sidebar-bottom">
-        <a href="{% url 'select_subjects' %}" class="nav-item">
-          <i data-lucide="settings" width="16" height="16"></i>
-          <span class="nav-label">Manage Subjects</span>
-        </a>
-        <a href="{% url 'logout' %}" class="nav-item">
-          <i data-lucide="log-out" width="16" height="16"></i>
-          <span class="nav-label">Log out</span>
-        </a>
-      </div>
-    </aside>
+<!-- Subjects List -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Current Subjects</span>
+        <span class="text-muted text-sm">{{ current_subjects|length }} subject{{ current_subjects|length|pluralize }}</span>
+    </div>
 
-    <main>
-      <div class="topbar">
-        <div class="topbar-left">
-          <h2>Hello, {{ student.name }}</h2>
-          <p>Exam Number: {{ student.exam_number }}</p>
-        </div>
-        <div class="avatar">{{ student.name|first }}{{ student.surname|first }}</div>
-      </div>
-
-      <div class="stats">
-        <div class="stat-card">
-          <div class="stat-label">Active Subjects</div>
-          <div class="stat-value">{{ active_subjects|length }}</div>
-          <div class="stat-sub">This year</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Tests captured</div>
-          <div class="stat-value">{{ total_tests }}</div>
-          <div class="stat-sub">Across all subjects</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Average %</div>
-          <div class="stat-value">{% if avg_percentage %}{{ avg_percentage }}%{% else %}—{% endif %}</div>
-          <div class="stat-sub">Overall</div>
-        </div>
-      </div>
-
-      <div class="section-title">Your subjects</div>
-      {% if active_subjects %}
-        <div class="subjects-grid">
-          {% for subject in active_subjects %}
-            <a href="{% url 'subject' subject.name|slugify %}" class="subject-card">
-              <div class="subject-card-name">{{ subject.name }}</div>
-              <div class="subject-bar-wrap">
-                <div class="subject-bar" style="width: 0%"></div>
-              </div>
-              <div class="subject-footer">
-                <span>No tests yet</span>
-                <span class="badge badge-e">—</span>
-              </div>
-            </a>
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="empty-subjects">
-          No subjects selected yet.
-          <a href="{% url 'select_subjects' %}">Select your subjects</a>.
-        </div>
-      {% endif %}
-    </main>
-
-  </div>
-
-  <!-- Mobile bottom nav -->
-  <nav class="mobile-nav">
-    <a href="{% url 'dashboard' %}" class="mobile-nav-item active" title="Dashboard">
-      <i data-lucide="layout-dashboard" width="22" height="22"></i>
-      <span>Dashboard</span>
-    </a>
-    {% if active_subjects %}
-      <a href="{% url 'subject' active_subjects.0.name|slugify %}" class="mobile-nav-item" title="Subjects">
-        <i data-lucide="book-open" width="22" height="22"></i>
-        <span>Subjects</span>
-      </a>
+    {% if current_subjects %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Subject</th>
+                <th>Percentage</th>
+                <th>Actions</th>
+                <th>Preview</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for subject in current_subjects %}
+            <tr>
+                <td class="mono text-muted" style="font-size:12px;">{{ forloop.counter }}</td>
+                <td>{{ subject.name }}</td>
+                <td>
+                    <div class="pct-cell">
+                        <span style="font-family:'DM Mono',monospace;min-width:38px;">{{ subject.average }}%</span>
+                        <div class="pct-bar-bg">
+                            <div class="pct-bar-fill" style="width:{{ subject.average }}%"></div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <a href="{% url 'student:subject' subject.name|slugify %}" class="btn btn-secondary btn-sm">View tests</a>
+                </td>
+                <td>
+                    {% if subject.report%}
+                    <button onclick="previewDocx(this)" data-url="{% url 'student:preview_report' subject.slug %}" class="btn" style="background: #E7E5E4; color: #1C1917; white-space:nowrap;">
+                        <i data-lucide="file-text" width="16" height="16" style="vertical-align:middle; margin-right:6px;"></i>
+                        Preview Report
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i data-lucide="user" width="22" height="22"></i>
+        <a href="{% url 'student:select_subjects' %}">You have not selected any subjects yet.</a>.
+    </div>
     {% endif %}
-    <a href="{% url 'select_subjects' %}" class="mobile-nav-item" title="Manage">
-      <i data-lucide="settings" width="22" height="22"></i>
-      <span>Manage</span>
-    </a>
-    <a href="{% url 'logout' %}" class="mobile-nav-item" title="Log out">
-      <i data-lucide="log-out" width="22" height="22"></i>
-      <span>Log out</span>
-    </a>
-  </nav>
+</div>
 
-  <script src="{% static 'main.js' %}"></script>
-</body>
-</html>
+<!-- Preview Card -->
+<div class="card" id="report-preview-card" style="display:flex; flex-direction:column; gap:1rem;">
+    <div style="display:flex; justify-content:flex-end;">
+        <button id="print-report-btn" onclick="printDocx()" class="btn" style="display:none; background:#2563EB; color:#fff; white-space:nowrap;">
+            <i data-lucide="printer" width="16" height="16" style="vertical-align:middle; margin-right:6px;"></i>
+            Print Report
+        </button>
+    </div>
+    <div id="docx-preview-container" class="print-section" style="display:none; border:1px solid #E7E5E4; padding:2rem; background:#fff; border-radius:0.5rem; max-height:600px; overflow-y:auto;">
+        <p style="color:#78716C; font-style:italic;">Loading preview...</p>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+    document.querySelectorAll('button[data-url]').forEach(btn =>
+        btn.addEventListener('click', () => {
+        const card = document.getElementById('report-preview-card');
+        card.style.display = '';
+        card.scrollIntoView({ behavior: 'smooth' });
+        })
+    );
+</script>
+{% endblock %}
