@@ -1,15 +1,21 @@
 import bisect
-from decimal import Decimal, ROUND_HALF_EVEN
+from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 
 from core.constants import SubjectID
 
 
 def round_decimal(value: float, places: int = 0) -> float:
-    quantizer = Decimal("1." + "0" * places)
-    return float(Decimal(str(value)).quantize(quantizer, rounding=ROUND_HALF_EVEN))
+    if value is None or value == "": return 0.0
+
+    try:
+        quantizer = Decimal("1." + "0" * places) if places > 0 else Decimal("1")
+        return float(Decimal(str(value)).quantize(quantizer, rounding=ROUND_HALF_UP))
+    except InvalidOperation:
+        return 0.0
 
 
 def calculate_percentage(mark: float, total: float) -> float:
+    mark, total = float(mark), float(total)
     if mark < 0 or total < 0:
         raise ValueError(f"Mark and total must be non-negative, got mark={mark}, total={total}")
     elif mark > total:
@@ -40,7 +46,7 @@ def assign_symbol(percentage: float, as_dict: bool = False) -> int | dict:
 
 
 #Generic calculator for all subjects.
-def calc_subject(subject_id: int, test_id: int, mark: float, total: int) -> tuple[float, float]:
+def calc_subject(subject_id: int, test_id: int, mark: float, total: float) -> tuple[float, float]:
     from core.subjects import SUBJECT_CHOICES
     percentage = calculate_percentage(mark, total)
     choices = SUBJECT_CHOICES.get(subject_id, {}).get('choices', [])  # ← add .get('choices', [])

@@ -1,14 +1,8 @@
-import io
-import os
-import tempfile
+import io, os, tempfile, subprocess
 
 from docx import Document
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL
 from docx2pdf import convert
-
-from core.calculator import assign_symbol, calculate_percentage
-from core.utils import format_exam_date
 from core.subjects import BUILDERS, REPORT_TEMPLATES
 
 
@@ -17,60 +11,103 @@ TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), '..', 'templates', 'docs
 
 class ReportGenerator:
 
-    def __init__(self, student, tests):
+    def __init__(self, student=None, tests=None, teacher=None, marks=None):
+        self.teacher = teacher
         self.student = student
+        self.marks = marks
         self.tests = tests
 
     # ── Helpers ───────────────────────────────────────────
 
-    def _mark(self, test_type, result_pos=0):
-        try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
-            return t.actual_mark if t.actual_mark is not None else '' or 0
-        except IndexError:
-            return '' or 0
+    def _mark(self, test_type=None, result_pos=0):
+        if self.teacher:
+            try:
+                m = self.marks.filter(student=self.student, test__type=test_type).order_by('weighted', '-test__date')[result_pos]
+                return m.mark or ''
+            except IndexError:
+                return ''
 
-    def _total(self, test_type, result_pos=0):
-        try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
-            return t.possible_mark if t.possible_mark is not None else '' or 0
-        except IndexError:
-            return '' or 0
+        elif self.student:
+            try:
+                t = self.tests.filter(type=test_type).order_by('weighted')[result_pos]
+                return t.mark or ''
+            except IndexError:
+                return ''
 
-    def _desc(self, test_type, result_pos=0, default=''):
-        try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
-            return t.test_description if t.test_description is not None else ''
-        except IndexError:
-            return default
+    def _total(self, test_type=None, result_pos=0):
+        if self.teacher:
+            try:
+                t = self.tests.filter(type=test_type).order_by('-date')[result_pos]
+                return t.total or ''
+            except IndexError:
+                return ''
 
-    def _weighted(self, test_type, result_pos=0):
-        try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
-            return t.weighted_mark if t.weighted_mark is not None else '' or 0
-        except IndexError:
-            return '' or 0
+        elif self.student:
+            try:
+                t = self.tests.filter(type=test_type).order_by('weighted')[result_pos]
+                return t.total or ''
+            except IndexError:
+                return ''
 
-    def _perc(self, test_type, result_pos=0):
-        try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
-            return t.percentage if t.percentage is not None else '' or 0
-        except IndexError:
-            return '' or 0
+    def _weighted(self, test_type=None, result_pos=0):
+        if self.teacher:
+            try:
+                t = self.marks.filter(student=self.student, test__type=test_type).order_by('weighted', '-test__date')[result_pos]
+                return t.weighted or ''
+            except IndexError:
+                return ''
 
-    def _sym(self, test_type, result_pos=0, default=1):
-        try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
-            return t.symbol if t.symbol else default
-        except IndexError:
-            return default
+        elif self.student:
+            try:
+                t = self.tests.filter(type=test_type).order_by('weighted')[result_pos]
+                return t.weighted or ''
+            except IndexError:
+                return ''
 
-    def _date(self, test_type, result_pos=0):
-        try:
-            t = self.tests.filter(test_type=test_type).order_by('weighted_mark')[result_pos]
-            return str(t.submission_date) if t.submission_date is not None else ''
-        except IndexError:
-            return ''
+    def _perc(self, test_type=None, result_pos=0):
+        if self.teacher:
+            try:
+                t = self.marks.filter(student=self.student, test__type=test_type).order_by('weighted', '-test__date')[result_pos]
+                return t.percentage or ''
+            except IndexError:
+                return ''
+
+        elif self.student:
+            try:
+                t = self.tests.filter(type=test_type).order_by('weighted')[result_pos]
+                return t.percentage or ''
+            except IndexError:
+                return ''
+
+    def _date(self, test_type=None, result_pos=0):
+        if self.teacher:
+            try:
+                t = self.tests.filter(type=test_type).order_by('-date')[result_pos]
+                return t.date if t.date is not None else ''
+            except IndexError:
+                return ''
+
+        elif self.student:
+            try:
+                t = self.tests.filter(type=test_type).order_by('weighted')[result_pos]
+                return str(t.date) if t.date is not None else ''
+            except IndexError:
+                return ''
+
+    def _desc(self, test_type=None, result_pos=0):
+        if self.teacher:
+            try:
+                t = self.tests.filter(type=test_type).order_by('-date')[result_pos]
+                return t.description if t.description is not None else ''
+            except IndexError:
+                return ''
+
+        elif self.student:
+            try:
+                t = self.tests.filter(type=test_type).order_by('weighted')[result_pos]
+                return t.description if t.description is not None else ''
+            except IndexError:
+                return ''
 
     # ── Template engine ───────────────────────────────────
 

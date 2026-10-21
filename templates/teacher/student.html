@@ -1,0 +1,272 @@
+{% extends "teacher/base.html" %}
+{% block title %}Update students — Portfolio Marker{% endblock %}
+
+{% block extra_head %}
+<style>
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; font-size: 13px; font-weight: 500;
+    border: 1px solid #E7E5E4; border-radius: 0.6rem;
+    background: #fff; color: #1C1917; cursor: pointer;
+    font-family: inherit; text-decoration: none; transition: background .15s, border-color .15s;
+  }
+  .btn-secondary:hover { background: #F5F5F4; border-color: #D6D3D1; }
+
+  .row-remove-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border: none; border-radius: 0.5rem;
+    background: transparent; color: #A8A29E; cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .row-remove-btn:hover { background: #FEE2E2; color: #DC2626; }
+  .row-remove-btn:disabled { opacity: .35; cursor: not-allowed; }
+  .row-remove-btn:disabled:hover { background: transparent; color: #A8A29E; }
+
+  #students-table input,
+  #students-table select { width: 100%; }
+  #students-table td { vertical-align: top; }
+  #students-table td:last-child { width: 40px; text-align: center; }
+
+  .hidden { display: none; }
+
+  @media (max-width: 640px) {
+    #students-table thead { display: none; }
+    #students-table, #students-table tbody, #students-table tr, #students-table td {
+      display: block; width: 100%;
+    }
+    #students-table tr.form-row {
+      border: 1px solid #E7E5E4; border-radius: 0.65rem;
+      padding: 10px 12px; margin-bottom: 10px;
+    }
+    #students-table td { padding: 4px 0; }
+    #students-table td:last-child { text-align: right; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header page-header-row">
+    <div>
+        <h1>Update students</h1>
+        <p>Edit details for {{ teacher.subject.subject|default:"your" }} students, or add new ones below.</p>
+    </div>
+    <a href="{% url 'teacher:dashboard' %}" class="btn-secondary">
+        <i data-lucide="arrow-left" width="14" height="14"></i>
+        Back to dashboard
+    </a>
+</div>
+
+<div class="tabs">
+    <a href="{% url 'teacher:manage_marks' %}" class="btn-secondary"> Marks </a>
+    <a href="{% url 'teacher:manage_tests' %}" class="btn-secondary"> Tests </a>
+    <button class="tab active" onclick="switchTab('students', this)"> Students </button>
+</div>
+
+<div class="panel-card">
+    <div class="panel-title">Student details</div>
+    <p class="panel-desc">
+        Update the fields for any existing student below, or click
+        <em>Add another student</em> to insert a new row. Rows you don't touch
+        are left as-is.
+    </p>
+
+    <form method="POST" action="{% url 'teacher:students' %}" id="update-students-form" novalidate>
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        {% if formset.non_form_errors %}
+        <ul class="errorlist">
+            {% for e in formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+
+        <div class="table-wrap">
+            <table id="students-table">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Surname</th>
+                    <th>Exam number</th>
+                    <th>Preview</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody id="form-container">
+                {% for form in formset %}
+                <tr class="form-row">
+                    <td>
+                        {{ form.id }}
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <ul class="errorlist">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ form.surname }}
+                        {% if form.surname.errors %}
+                        <ul class="errorlist">{% for e in form.surname.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ form.exam_num }}
+                        {% if form.exam_num.errors %}
+                        <ul class="errorlist">{% for e in form.exam_num.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if form.instance.pk %}
+                        <button type="button" onclick="previewDocx(this)" data-url="{% url 'teacher:preview_report' form.instance.pk %}" class="btn" style="background: #E7E5E4; color: #1C1917; white-space:nowrap;">
+                            <i data-lucide="file-text" width="16" height="16" style="vertical-align:middle; margin-right:6px;"></i>
+                            Preview Report
+                        </button>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button type="button" class="row-remove-btn" title="Remove row">
+                            <i data-lucide="x" width="16" height="16"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">
+                        <div class="empty-state">
+                            <i data-lucide="users" width="22" height="22"></i>
+                            <p>No students assigned to your class roster yet.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <button type="button" id="add_student" class="btn-secondary" style="margin-top:0.85rem;">
+            <i data-lucide="plus" width="14" height="14"></i>
+            Add another student
+        </button>
+
+        <a href="{% url 'teacher:generate_all' %}" class="btn btn-secondary" style="white-space:nowrap;">
+            <i data-lucide="download" width="16" height="16" style="vertical-align:middle; margin-right:6px;"></i>
+            Download all reports
+        </a>
+
+        <div style="margin-top:1.25rem;display:flex;gap:0.6rem;">
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="save" width="14" height="14"></i>
+                Save changes
+            </button>
+            <a href="{% url 'teacher:students' %}" class="btn-secondary">Cancel</a>
+        </div>
+    </form>
+
+    <!-- Hidden empty-form template used by JS to clone new rows -->
+    <table class="hidden">
+        <tbody id="empty-form">
+        <tr class="form-row">
+            <td>
+                {{ formset.empty_form.id }}
+                {{ formset.empty_form.name }}
+            </td>
+            <td>{{ formset.empty_form.surname }}</td>
+            <td>{{ formset.empty_form.exam_num }}</td>
+            <td>
+                <button type="button" class="row-remove-btn" title="Remove row">
+                    <i data-lucide="x" width="16" height="16"></i>
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Preview Card -->
+<div class="card" id="report-preview-card" style="display:flex; flex-direction:column; gap:1rem;">
+    <div style="display:flex; justify-content:flex-end; gap:16px">
+        <a id="download-report-btn" href="#" class="btn btn-primary" style="display:none; white-space:nowrap;">
+            <i data-lucide="download" width="16" height="16" style="vertical-align:middle; margin-right:6px;"></i>
+            Download Report
+        </a>
+
+        <button id="print-report-btn" onclick="printDocx()" class="btn" style="display:none; background:#2563EB; color:#fff; white-space:nowrap;">
+            <i data-lucide="printer" width="16" height="16" style="vertical-align:middle; margin-right:6px;"></i>
+            Print Report
+        </button>
+    </div>
+    <div id="docx-preview-container" class="print-section" style="display:none; border:1px solid #E7E5E4; padding:2rem; background:#fff; border-radius:0.5rem; max-height:600px; overflow-y:auto;">
+        <p style="color:#78716C; font-style:italic;">Loading preview...</p>
+    </div>
+</div>
+
+<script>
+  (function () {
+    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+    const tableBody  = document.getElementById('form-container');
+    const emptyRow   = document.getElementById('empty-form').querySelector('.form-row');
+
+    function reindexRows() {
+      const rows = tableBody.querySelectorAll('.form-row');
+      rows.forEach((row, index) => {
+        row.querySelectorAll('input, select, textarea').forEach(field => {
+          ['name', 'id'].forEach(attr => {
+            if (field[attr]) {
+              field[attr] = field[attr].replace(/form-(\d+|__prefix__)-/, 'form-' + index + '-');
+            }
+          });
+        });
+        row.querySelectorAll('label').forEach(label => {
+          if (label.htmlFor) {
+            label.htmlFor = label.htmlFor.replace(/form-(\d+|__prefix__)-/, 'form-' + index + '-');
+          }
+        });
+      });
+      totalForms.value = rows.length;
+      updateRemoveButtons();
+    }
+
+    function updateRemoveButtons() {
+      const rows = tableBody.querySelectorAll('.form-row');
+      rows.forEach(row => {
+        const btn = row.querySelector('.row-remove-btn');
+        if (btn) btn.disabled = rows.length <= 1;
+      });
+    }
+
+    function attachRemoveHandler(row) {
+      const btn = row.querySelector('.row-remove-btn');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        if (tableBody.querySelectorAll('.form-row').length <= 1) return;
+        row.remove();
+        reindexRows();
+      });
+    }
+
+    document.getElementById('add_student').addEventListener('click', function () {
+      const newRow = emptyRow.cloneNode(true);
+      newRow.querySelectorAll('input, select, textarea').forEach(field => { field.value = ''; });
+      tableBody.appendChild(newRow);
+      attachRemoveHandler(newRow);
+      reindexRows();
+      if (window.lucide) lucide.createIcons();
+    });
+
+    tableBody.querySelectorAll('.form-row').forEach(attachRemoveHandler);
+    updateRemoveButtons();
+  })();
+
+  document.querySelectorAll('button[data-url]').forEach(btn =>
+    btn.addEventListener('click', () => {
+        const card = document.getElementById('report-preview-card');
+        card.style.display = 'flex';
+        card.scrollIntoView({ behavior: 'smooth' });
+
+        const dl = document.getElementById('download-report-btn');
+        dl.href = btn.dataset.url.replace('/preview/', '/report/');
+        dl.style.display = 'inline-flex';
+    })
+);
+
+  lucide.createIcons();
+</script>
+{% endblock %}

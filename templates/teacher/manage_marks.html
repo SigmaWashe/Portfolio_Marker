@@ -1,0 +1,130 @@
+{% extends "teacher/base.html" %}
+{% block title %}Enter marks — Portfolio Marker{% endblock %}
+
+
+{% block extra_head %}
+<style>
+
+  .test-select-row {
+    display: flex; align-items: flex-end; gap: 16px; margin-bottom: 16px;
+  }
+  .field-group label {
+    display: block; font-size: 12px; font-weight: 500; color: #57534E; margin-bottom: 4px;
+  }
+
+  .form-errors { color: #B91C1C; font-size: 13px; margin-bottom: 12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header page-header-row">
+    <div>
+        <h1>Manage marks and tests</h1>
+        <p>Log marks and tests for all across your class</p>
+    </div>
+    <a href="{% url 'teacher:dashboard' %}" class="btn-secondary">
+        <i data-lucide="arrow-left" width="14" height="14"></i>
+        Back to dashboard
+    </a>
+</div>
+
+<div class="tabs">
+    <button class="tab active" onclick="switchTab('marks', this)">Marks</button>
+    <a href="{% url 'teacher:manage_tests' %}" class="btn-secondary"> Tests </a>
+    <a href="{% url 'teacher:students' %}" class="btn-secondary"> Students </a>
+</div>
+
+<div class="card">
+    <h4>Manage all your students marks</h4>
+    <form method="POST" action="{% url 'teacher:manage_marks' %}">
+        {% csrf_token %}
+
+        <div class="test-select-row">
+            <div class="field-group">
+                <label for="{{ form.tests.id_for_label }}">Test</label>
+                {{ form.tests }}
+                {% if form.tests.errors %}<p class="form-errors">{{ form.tests.errors.0 }}</p>{% endif %}
+            </div>
+            <div class="field-group">
+                <label for="total">Total marks</label>
+                <input id="total" name="total" type="number" min="1" step="1" placeholder="e.g., 50" />
+            </div>
+        </div>
+
+
+        {% if students %}
+        <div class="table-wrap">
+            <table class="data-table" id="marks-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Exam number</th>
+                    <th>Student</th>
+                    <th>Mark</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for student in students %}
+                <tr>
+                    <td class="mono text-muted" style="font-size:12px;">{{ forloop.counter }}</td>
+                    <td class="mono text-muted" style="font-size:12px;">{{ student.exam_num }}</td>
+                    <td>{{ student.name }} {{ student.surname }}</td>
+                    <td>
+                        <input id="mark_{{ student.id }}" name="mark_{{ student.id }}" type="number" min="0" step="0.5" placeholder="50" />
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div style="margin-top:1.25rem;display:flex;gap:0.6rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="save" width="14" height="14"></i>
+                    Save all results
+                </button>
+                <a href="{% url 'teacher:manage_marks' %}" class="btn-secondary">Cancel</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i data-lucide="users" width="22" height="22"></i>
+            <p>No students assigned to your class roster yet.</p>
+        </div>
+        {% endif %}
+
+    </form>
+</div>
+
+
+{{ marks|json_script:"marks" }}
+{{ tests|json_script:"tests" }}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+     const testSelect = document.getElementById('{{ form.tests.id_for_label }}');
+     const totalInput = document.getElementById('total');
+     const marks = JSON.parse(document.getElementById('marks').textContent);
+     const tests = JSON.parse(document.getElementById('tests').textContent);
+
+     if (!testSelect) return;
+
+     testSelect.addEventListener('change', function () {
+        const testId = testSelect.value;
+
+        // Clear every mark field first, then repopulate from the selected test.
+        document.querySelectorAll('input[id^="mark_"]').forEach(i => i.value = '');
+
+        marks.forEach(function (m) {
+           if (String(m.test_id) === testId) {
+              const input = document.getElementById('mark_' + m.student_id);
+              if (input) input.value = m.mark;
+           }
+        });
+
+        const selectedTest = tests.find(t => String(t.id) === testId);
+        if (selectedTest) totalInput.value = selectedTest.total;
+     });
+  });
+
+  lucide.createIcons();
+</script>
+{% endblock %}

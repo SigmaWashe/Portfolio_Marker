@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'portfolio_marker',
+    'teacher',
+    'common',
     'static',
     'core',
     'allauth',
