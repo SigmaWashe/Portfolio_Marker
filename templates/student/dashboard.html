@@ -1,0 +1,107 @@
+{% extends "student/base.html" %}
+{% block title %}Dashboard — Portfolio Marker{% endblock %}
+
+{% block content %}
+<div class="topbar">
+    <div class="topbar-left">
+        <h2>Hello, {{ student.name }} {{ student.surname }}</h2>
+        <p>Exam Number: {{ student.exam_num }}</p>
+    </div>
+    <div class="avatar">{{ student.name|first }}{{ student.surname|first }}</div>
+</div>
+
+<!-- Stat tiles -->
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-label">Current Subjects</div>
+        <div class="stat-value">{{ current_subjects|length }}</div>
+        <div class="stat-sub">This year</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Average %</div>
+        <div class="stat-value">{% if avg_percentage %}{{ avg_percentage }}%{% else %}—{% endif %}</div>
+        <div class="stat-sub">Overall</div>
+    </div>
+</div>
+
+
+<!-- Subjects List -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Current Subjects</span>
+        <span class="text-muted text-sm">{{ current_subjects|length }} subject{{ current_subjects|length|pluralize }}</span>
+    </div>
+
+    {% if current_subjects %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Subject</th>
+                <th>Percentage</th>
+                <th>Actions</th>
+                <th>Preview</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for subject in current_subjects %}
+            <tr>
+                <td class="mono text-muted" style="font-size:12px;">{{ forloop.counter }}</td>
+                <td>{{ subject.name }}</td>
+                <td>
+                    <div class="pct-cell">
+                        <span style="font-family:'DM Mono',monospace;min-width:38px;">{{ subject.average }}%</span>
+                        <div class="pct-bar-bg">
+                            <div class="pct-bar-fill" style="width:{{ subject.average }}%"></div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <a href="{% url 'student:subject' subject.name|slugify %}" class="btn btn-secondary btn-sm">View tests</a>
+                </td>
+                <td>
+                    {% if subject.report%}
+                    <button onclick="previewDocx(this)" data-url="{% url 'student:preview_report' subject.slug %}" class="btn" style="background: #E7E5E4; color: #1C1917; white-space:nowrap;">
+                        <i data-lucide="file-text" width="16" height="16" style="vertical-align:middle; margin-right:6px;"></i>
+                        Preview Report
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i data-lucide="user" width="22" height="22"></i>
+        <a href="{% url 'student:select_subjects' %}">You have not selected any subjects yet.</a>.
+    </div>
+    {% endif %}
+</div>
+
+<!-- Preview Card -->
+<div class="card" id="report-preview-card" style="display:flex; flex-direction:column; gap:1rem;">
+    <div style="display:flex; justify-content:flex-end;">
+        <button id="print-report-btn" onclick="printDocx()" class="btn" style="display:none; background:#2563EB; color:#fff; white-space:nowrap;">
+            <i data-lucide="printer" width="16" height="16" style="vertical-align:middle; margin-right:6px;"></i>
+            Print Report
+        </button>
+    </div>
+    <div id="docx-preview-container" class="print-section" style="display:none; border:1px solid #E7E5E4; padding:2rem; background:#fff; border-radius:0.5rem; max-height:600px; overflow-y:auto;">
+        <p style="color:#78716C; font-style:italic;">Loading preview...</p>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+    document.querySelectorAll('button[data-url]').forEach(btn =>
+        btn.addEventListener('click', () => {
+        const card = document.getElementById('report-preview-card');
+        card.style.display = '';
+        card.scrollIntoView({ behavior: 'smooth' });
+        })
+    );
+</script>
+{% endblock %}

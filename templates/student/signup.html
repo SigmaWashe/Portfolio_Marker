@@ -10,8 +10,8 @@
   <link rel="stylesheet" href="{% static 'auth.css' %}" />
 </head>
 <body>
-  <main>
-    <form method="POST" action="{% url 'signup' %}" id="signup-form">
+  <main class="auth-main">
+    <form method="POST" action="{% url 'student:signup' %}" id="signup-form">
       {% csrf_token %}
 
       <div class="logo-row">
@@ -44,24 +44,24 @@
       <div class="step-panel active" id="panel-1">
         <label>
           <span>Exam Number</span>
-          <input type="text" name="exam_num" id="id_exam_num" placeholder="Enter your exam number" />
+          <input type="text" name="exam_num" id="id_exam_num" placeholder="Exam number" />
         </label>
         <label>
           <span>First Name</span>
-          <input type="text" name="name" id="id_name" placeholder="Enter your first name" />
+          <input type="text" name="name" id="id_name" placeholder="Name" />
         </label>
         <label>
           <span>Surname</span>
-          <input type="text" name="surname" id="id_surname" placeholder="Enter your surname" />
+          <input type="text" name="surname" id="id_surname" placeholder="Surname" />
         </label>
         <div class="button-wrap">
           <button type="button" class="button" onclick="goToStep2()">Next</button>
           <div class="divider">or</div>
-          <a href="{% url 'google_login' %}" class="button-google">
+          <a href="{% url 'student:google_login' %}" class="button-google">
             <img src="{% static 'images/google_icon.svg' %}" alt="Google Icon" width="20" height="20"/>
             Continue with Google
           </a>
-          <a href="{% url 'login' %}" class="button button-outline">Log In</a>
+          <a href="{% url 'student:login' %}" class="button button-outline">Log In</a>
         </div>
       </div>
 
@@ -70,7 +70,7 @@
         <label>
           <span>Password</span>
           <div class="passwd-wrap">
-            <input type="password" name="password1" id="id_password" placeholder="Enter your password..." required />
+            <input type="password" name="password1" id="id_password" placeholder="Enter your password" required />
             <button type="button" class="show-passwd" id="show-passwd-1">
               <img src="{% static 'images/eye_open.svg' %}" alt="Show Password" />
             </button>
@@ -79,7 +79,7 @@
         <label>
           <span>Confirm Password</span>
           <div class="passwd-wrap">
-            <input type="password" name="password2" id="id_confirm_password" placeholder="Confirm your password..." required />
+            <input type="password" name="password2" id="id_confirm_password" placeholder="Confirm your password" required />
             <button type="button" class="show-passwd" id="show-passwd-2">
               <img src="{% static 'images/eye_open.svg' %}" alt="Show Password" />
             </button>

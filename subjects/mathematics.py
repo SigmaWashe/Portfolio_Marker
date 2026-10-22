@@ -21,7 +21,7 @@ def build_data(g):
     short_wins = short_weight >= long_weight
     total = round_decimal((short_weight if short_wins else long_weight) + test_weight + prelim_weight, 1)
 
-    exam = str(g.student.exam_num).zfill(13)
+    exam = f"{g.student.exam_num} "
 
     data = {
         "{NAME}": g.student.name, "{SURNAME}": g.student.surname,

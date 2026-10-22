@@ -16,7 +16,7 @@ def build_data(g):
     visual_analysis = g._mark(History.VISUAL_ANALYSIS)
     secB_alt = source_analysis + source_based_essay + visual_analysis
 
-    exam = str(g.student.exam_num).zfill(13)
+    exam = f"{g.student.exam_num} "
 
     results = {
         "{NAME}": g.student.name, "{SURNAME}": g.student.surname,
@@ -24,9 +24,9 @@ def build_data(g):
         "{5}": exam[4],  "{6}": exam[5],  "{7}": exam[6],  "{8}": exam[7],
         "{9}": exam[8],  "{10}": exam[9], "{11}": exam[10], "{12}": exam[11], "{13}": exam[12],
 
-        "test1_mark": g._mark(History.TEST, 0), "test1_total": g._total(History.TEST, 0), "test1_weighted": g._weighted(History.TEST, 0),
-        "test2_mark": g._mark(History.TEST, 1), "test2_total": g._total(History.TEST, 1), "test2_weighted": g._weighted(History.TEST, 1),
-        "test3_mark": g._mark(History.TEST, 2), "test3_total": g._total(History.TEST, 2), "test3_weighted": g._weighted(History.TEST, 2),
+        "{test1_mark}": g._mark(History.TEST, 0), "{test1_total}": g._total(History.TEST, 0), "{test1_weighted}": g._weighted(History.TEST, 0),
+        "{test2_mark}": g._mark(History.TEST, 1), "{test2_total}": g._total(History.TEST, 1), "{test2_weighted}": g._weighted(History.TEST, 1),
+        "{test3_mark}": g._mark(History.TEST, 2), "{test3_total}": g._total(History.TEST, 2), "{test3_weighted}": g._weighted(History.TEST, 2),
         "{secA_weighted}": g._weighted(History.TEST, 0) + g._weighted(History.TEST, 1) + g._weighted(History.TEST, 2),
 
         "{prelim1_mark}": g._mark(History.PRELIM_PAPER_1, 0), "{prelim2_mark}": g._mark(History.PRELIM_PAPER_2, 1),
@@ -35,14 +35,14 @@ def build_data(g):
 
     if history_inv > secB_alt:
         total += g._weighted(History.HIST_INV)
-        results += {"{history_inv_mark}": history_inv, "{history_inv_weighted}": g._weighted(History.HIST_INV),
-                    "{secB_weighted}": g._weighted(History.HIST_INV)}
-        results += {"{source_analysis_mark}": '', "{source_essay_mark}": '', "{vis_analysis_mark}": ''}
+        results.update({"{history_inv_mark}": history_inv, "{history_inv_weighted}": g._weighted(History.HIST_INV),
+                        "{secB_weighted}": g._weighted(History.HIST_INV)})
+        results.update({"{source_analysis_mark}": '', "{source_essay_mark}": '', "{vis_analysis_mark}": ''})
     else:
         total += secB_alt
-        results += {"{source_analysis_mark}": source_analysis, "{source_essay_mark}": source_based_essay, "{vis_analysis_mark}": visual_analysis,
-        "{secB_weighted}": g._weighted(History.SOURCE_ANALYSIS) + g._weighted(History.SOURCE_BASED_ESSAY) + g._weighted(History.VISUAL_ANALYSIS)}
-        results += {"{history_inv_mark}": '', "{history_inv_weighted}": ''}
-    results += {"total": total}
+        results.update({"{source_analysis_mark}": source_analysis, "{source_essay_mark}": source_based_essay, "{vis_analysis_mark}": visual_analysis,
+        "{secB_weighted}": g._weighted(History.SOURCE_ANALYSIS) + g._weighted(History.SOURCE_BASED_ESSAY) + g._weighted(History.VISUAL_ANALYSIS)})
+        results.update({"{history_inv_mark}": '', "{history_inv_weighted}": ''})
+    results.update({"{total}": total})
 
     return results

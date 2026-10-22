@@ -107,7 +107,7 @@ SUBJECT_FIELDS = {
 
 REPORT_TEMPLATES = {
     SubjectID.Accounting:             "Accounting.docx",
-    SubjectID.AgriculturalManagement: "AgriculturalManagement.docx",
+    SubjectID.AgriculturalManagement: "Agricultural Management.docx",
     SubjectID.AgriculturalSciences:   "Agricultural Sciences.docx",
     SubjectID.Business:               "Business Studies.docx",
     SubjectID.CAT:                    "Computer Applications Technology.docx",

@@ -1,0 +1,146 @@
+{% extends "student/base.html" %}
+{% load static %}
+
+{% block title %}Select Subjects - Portfolio Marker{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'auth.css' %}" />
+{% endblock %}
+
+{% block content %}
+<form method="POST" class="full-page">
+    {% csrf_token %}
+
+      <div class="logo-row">
+          <div class="logo-mark">PM</div>
+          <div class="logo-text">Portfolio Marker</div>
+      </div>
+
+      <div class="accent-bar"></div>
+    <h3>Your subjects</h3>
+
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+    {{ form.non_field_errors }}
+
+    <p class="subtitle">Select the subjects you are doing this year.</p>
+
+    <label for="{{ form.subjects.id_for_label }}" style="margin-bottom: 0.4rem;">
+        <span>{{ form.subjects.label }}</span>
+    </label>
+    {{ form.subjects }}
+    {{ form.subjects.errors }}
+
+    <div class="button-wrap">
+        <button type="submit" class="button">Continue to dashboard</button>
+    </div>
+</form>
+
+<script>
+console.log('select_subjects script running');
+document.querySelectorAll('select.searchable-select[multiple]').forEach(select => {
+  const options = [...select.options].filter(o => o.value);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'searchable-select-wrap';
+  const box = document.createElement('div');
+  box.className = 'ss-box';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'ss-search-input';
+  input.autocomplete = 'off';
+  const list = document.createElement('div');
+  list.className = 'ss-options';
+
+  select.classList.add('select-input');
+  select.tabIndex = -1;
+  select.before(wrap);
+  box.append(input);
+  wrap.append(select, box, list);
+
+  let visible = [], activeIdx = 0;
+
+  function renderChips() {
+    box.querySelectorAll('.ss-chip').forEach(c => c.remove());
+    options.filter(o => o.selected).forEach(o => {
+      const chip = document.createElement('span');
+      chip.className = 'ss-chip';
+      chip.textContent = o.text.trim();
+      const x = document.createElement('button');
+      x.type = 'button';
+      x.className = 'ss-chip-x';
+      x.textContent = '×';
+      x.addEventListener('mousedown', e => { e.preventDefault(); toggle(o); });
+      chip.append(x);
+      box.insertBefore(chip, input);
+    });
+    input.placeholder = select.selectedOptions.length ? '' : 'Search subjects…';
+  }
+
+  function render() {
+    const q = input.value.trim().toLowerCase();
+    visible = options.filter(o => o.text.toLowerCase().includes(q));
+    list.innerHTML = '';
+    if (!visible.length) {
+      list.innerHTML = '<div class="ss-no-results">No matches</div>';
+      return;
+    }
+    activeIdx = Math.max(0, Math.min(activeIdx, visible.length - 1));
+    visible.forEach((o, i) => {
+      const row = document.createElement('div');
+      row.className = 'ss-option' + (o.selected ? ' ss-selected' : '') + (i === activeIdx ? ' ss-active' : '');
+      row.textContent = o.text.trim();
+      row.addEventListener('mousedown', e => { e.preventDefault(); toggle(o); });
+      list.appendChild(row);
+    });
+    const a = list.children[activeIdx];
+    if (a && a.scrollIntoView) a.scrollIntoView({ block: 'nearest' });
+  }
+
+  function toggle(o) {
+    o.selected = !o.selected;
+    input.value = '';
+    renderChips();
+    render();
+  }
+
+  const open = () => { list.classList.add('open'); render(); };
+  const close = () => list.classList.remove('open');
+
+  box.addEventListener('mousedown', e => {
+    if (e.target !== input && !e.target.classList.contains('ss-chip-x')) {
+      e.preventDefault();
+      input.focus();
+    }
+  });
+  input.addEventListener('focus', open);
+  input.addEventListener('click', open);
+  input.addEventListener('blur', () => { close(); input.value = ''; activeIdx = 0; });
+  input.addEventListener('input', () => { activeIdx = 0; open(); });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!list.classList.contains('open')) open();
+      activeIdx = Math.min(activeIdx + 1, visible.length - 1);
+      render();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIdx = Math.max(activeIdx - 1, 0);
+      render();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (visible[activeIdx]) toggle(visible[activeIdx]);
+    } else if (e.key === 'Escape') {
+      close();
+    } else if (e.key === 'Backspace' && !input.value) {
+      const sel = options.filter(o => o.selected);
+      if (sel.length) toggle(sel[sel.length - 1]);
+    }
+  });
+
+  select.addEventListener('focus', () => input.focus());
+  renderChips();
+});
+</script>
+{% endblock %}
