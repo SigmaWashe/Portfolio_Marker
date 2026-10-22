@@ -1,0 +1,210 @@
+{% extends "teacher/base.html" %}
+{% block title %}Enter marks — Portfolio Marker{% endblock %}
+
+
+{% block content %}
+
+
+<div class="page-header page-header-row">
+    <div>
+        <h1>Manage marks and tests</h1>
+        <p>Log marks and tests for all across your class</p>
+    </div>
+    <a href="{% url 'teacher:dashboard' %}" class="btn-secondary">
+        <i data-lucide="arrow-left" width="14" height="14"></i>
+        Back to dashboard
+    </a>
+</div>
+
+<div class="tabs">
+    <a href="{% url 'teacher:manage_marks' %}" class="btn-secondary"> Marks </a>
+    <button class="tab active" onclick="switchTab('tests', this)">Tests</button>
+    <a href="{% url 'teacher:students' %}" class="btn-secondary"> Students </a>
+</div>
+
+<div class="tab-panel active" id="tab-tests">
+    <div class="card">
+        <h4>Manage all your tests</h4>
+        <form method="POST" action="{% url 'teacher:manage_tests' %}" novalidate>
+            {% csrf_token %}
+            {{ formset.management_form }}
+
+            {% if formset.non_form_errors %}
+            <ul class="errorlist">
+                {% for e in formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+
+            <div class="table-wrap">
+                <table class="data-table" id="tests-table">
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody id="form-container">
+                    {% for form in formset %}
+                    <tr class="form-row">
+                        <td>
+                            {{ form.id }}
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                            <ul class="errorlist">
+                                {% for e in form.date.errors %}
+                                <li>  {{ e }}  </li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ form.type }}
+                            {% if form.type.errors %}
+                            <ul class="errorlist">
+                                {% for e in form.type.errors %}
+                                <li>  {{ e }}  </li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <ul class="errorlist">
+                                {% for e in form.description.errors %}
+                                <li>  {{ e }}  </li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ form.total }}
+                            {% if form.total.errors %}
+                            <ul class="errorlist">
+                                {% for e in form.total.errors %}
+                                <li>  {{ e }}  </li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button type="button" class="row-remove-btn" title="Remove row">
+                                <i data-lucide="trash" width="16" height="16"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <i data-lucide="users" width="22" height="22"></i>
+                                <p>You do not have any tests yet.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top:1.25rem;display:flex;gap:0.6rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="save" width="14" height="14"></i>
+                    Save all results
+                </button>
+
+                <button type="button" id="add_test" class="btn btn-primary">
+                    <i data-lucide="file-plus-corner" width="14" height="14"></i>
+                    Add another test
+                </button>
+
+                <a href="{% url 'teacher:manage_tests' %}" class="btn-secondary">Cancel</a>
+            </div>
+
+        </form>
+        <!-- Hidden empty-form template used by JS to clone new rows -->
+        <table class="hidden">
+            <tbody id="empty-form">
+            <tr class="form-row">
+                <td>
+                    {{ formset.empty_form.id }}
+                    {{ formset.empty_form.date }}
+                </td>
+                <td> {{ formset.empty_form.type }}</td>
+                <td> {{ formset.empty_form.description }}</td>
+                <td> {{ formset.empty_form.total }}</td>
+                <td>
+                    <button type="button" class="row-remove-btn" title="Remove row">
+                        <i data-lucide="x" width="16" height="16"></i>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<script>
+  (function () {
+    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+    const tableBody  = document.getElementById('form-container');
+    const emptyRow   = document.getElementById('empty-form').querySelector('.form-row');
+
+    function reindexRows() {
+      const rows = tableBody.querySelectorAll('.form-row');
+      rows.forEach((row, index) => {
+        row.querySelectorAll('input, select, textarea').forEach(field => {
+          ['name', 'id'].forEach(attr => {
+            if (field[attr]) {
+              field[attr] = field[attr].replace(/form-(\d+|__prefix__)-/, 'form-' + index + '-');
+            }
+          });
+        });
+        row.querySelectorAll('label').forEach(label => {
+          if (label.htmlFor) {
+            label.htmlFor = label.htmlFor.replace(/form-(\d+|__prefix__)-/, 'form-' + index + '-');
+          }
+        });
+      });
+      totalForms.value = rows.length;
+      updateRemoveButtons();
+    }
+
+    function updateRemoveButtons() {
+      const rows = tableBody.querySelectorAll('.form-row');
+      rows.forEach(row => {
+        const btn = row.querySelector('.row-remove-btn');
+        if (btn) btn.disabled = rows.length <= 1;
+      });
+    }
+
+    function attachRemoveHandler(row) {
+      const btn = row.querySelector('.row-remove-btn');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        if (tableBody.querySelectorAll('.form-row').length <= 1) return;
+        row.remove();
+        reindexRows();
+      });
+    }
+
+    document.getElementById('add_test').addEventListener('click', function () {
+      const newRow = emptyRow.cloneNode(true);
+      newRow.querySelectorAll('input, select, textarea').forEach(field => { field.value = ''; });
+      tableBody.appendChild(newRow);
+      attachRemoveHandler(newRow);
+      reindexRows();
+      if (window.lucide) lucide.createIcons();
+    });
+
+    tableBody.querySelectorAll('.form-row').forEach(attachRemoveHandler);
+    updateRemoveButtons();
+  })();
+
+  lucide.createIcons();
+</script>
+{% endblock %}

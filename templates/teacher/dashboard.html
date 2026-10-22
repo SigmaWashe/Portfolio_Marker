@@ -3,69 +3,163 @@
 
 {% block content %}
 <div class="page-header page-header-row">
-  <div>
-    <h1>Good day, {{ teacher.name }}</h1>
-    <p>Here's an overview of your {{ teacher.subject.subject }} class.</p>
-  </div>
-  <a href="{% url 'student' %}" class="btn btn-primary btn-sm">
-    <i data-lucide="users" width="14" height="14"></i>
-    View students
-  </a>
+    <div>
+        <h1>Good day, {{ teacher.name }}</h1>
+        <p>Here's an overview of your {{ teacher.subject.subject }} class.</p>
+    </div>
 </div>
 
 <!-- Stat tiles -->
 <div class="stats">
-  <div class="stat-card">
-    <div class="stat-label">Total students</div>
-    <div class="stat-value">{{ number_students }}</div>
-    <div class="stat-sub">enrolled in {{ teacher.subject.subject }}</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">School</div>
-    <div class="stat-value" style="font-size:1.15rem;font-weight:600;line-height:1.4;">
-      {{ teacher.school.name_of_school }}
+    <div class="stat-card">
+        <div class="stat-label">Total students</div>
+        <div class="stat-value">{{ students|length}}</div>
+        <div class="stat-sub">enrolled in {{ teacher.subject.subject }}</div>
     </div>
-    <div class="stat-sub">Centre {{ teacher.school.center_number }}</div>
-  </div>
+    <div class="stat-card">
+        <div class="stat-label">School</div>
+        <div class="stat-value" style="font-size:1.15rem;font-weight:600;line-height:1.4;">
+            {{ teacher.school.name_of_school }}
+        </div>
+        <div class="stat-sub">Centre {{ teacher.school.center_number }}</div>
+    </div>
 </div>
 
-<!-- Student roster -->
-<div class="card">
-  <div class="card-header">
-    <span class="card-title">Student roster</span>
-    <span class="text-muted text-sm">{{ number_students }} student{{ current_students|length|pluralize }}</span>
-  </div>
 
-  {% if current_students %}
-  <div class="table-wrap">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Full name</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for s in current_students %}
-        <tr>
-          <td class="mono text-muted" style="font-size:12px;">{{ forloop.counter }}</td>
-          <td>{{ s.full_name }}</td>
-          <td>
-            <a href="{% url 'student' %}" class="btn btn-secondary btn-sm">View tests</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% else %}
-  <div class="empty-state">
-    <i data-lucide="user" width="22" height="22"></i>
-    <p>No students assigned to your class roster yet.</p>
-  </div>
-  {% endif %}
+<div class="dashboard-row">
+
+    <!-- Student roster -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Student roster</span>
+            <span class="text-muted text-sm">{{ students|length }} student{{ students|length|pluralize }}</span>
+        </div>
+
+          {% if students %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Full name</th>
+                    <th>Percentage</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for student in students %}
+                <tr>
+                    <td class="mono text-muted" style="font-size:12px;">{{ forloop.counter }}</td>
+                    <td>{{ student.full_name }}</td>
+                    <td>
+                        <div class="pct-cell">
+                            <span style="font-family:'DM Mono',monospace;min-width:38px;">{{ student.average }}%</span>
+                            <div class="pct-bar-bg">
+                                <div class="pct-bar-fill" style="width:{{ student.average }}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <button type="button" onclick="previewDocx(this)" data-url="{% url 'teacher:preview_report' student.id %}" class="btn" style="background: #E7E5E4; color: #1C1917; white-space:nowrap;">
+                            <i data-lucide="file-text" width="16" height="16" style="vertical-align:middle; margin-right:6px;"></i>
+                            Preview Report
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i data-lucide="user" width="22" height="22"></i>
+            <p>No students assigned to your class roster yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Assesments -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Assessments</span>
+            <span class="text-muted text-sm">{{ tests|length }} test{{ tests|length|pluralize }}</span>
+        </div>
+
+        {% if tests %}
+        <div class="table-wrap">
+            <table id="marks-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Description</th>
+                    <th>Test Type</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Average</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for t in tests %}
+                <tr>
+                    <td class="mono text-muted" style="font-size:12px;">{{ forloop.counter }}</td>
+                    <td>{{ t.description }}</td>
+                    <td>{{ t.type }}</td>
+                    <td>{{ t.date }}</td>
+                    <td>{{ t.total }}</td>
+                    <td>
+                        <div class="pct-cell">
+                            <span style="font-family:'DM Mono',monospace;min-width:38px;">{{ t.average }}%</span>
+                            <div class="pct-bar-bg">
+                                <div class="pct-bar-fill" style="width:{{ t.average }}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i data-lucide="users" width="22" height="22"></i>
+            <p>No students assigned to your class roster yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
 </div>
 
-<script>lucide.createIcons();</script>
+<!-- Preview Card -->
+<div class="card" id="report-preview-card" style="display:flex; flex-direction:column; gap:1rem;">
+    <div style="display:flex; justify-content:flex-end; gap:1rem">
+        <a id="download-report-btn" href="#" class="btn btn-primary" style="display:none; white-space:nowrap;">
+            <i data-lucide="download" width="16" height="16" style="vertical-align:middle; margin-right:6px;"></i>
+            Download Report
+        </a>
+
+        <button id="print-report-btn" onclick="printDocx()" class="btn" style="display:none; background:#2563EB; color:#fff; white-space:nowrap;">
+            <i data-lucide="printer" width="16" height="16" style="vertical-align:middle; margin-right:6px;"></i>
+            Print Report
+        </button>
+    </div>
+    <div id="docx-preview-container" class="print-section" style="display:none; border:1px solid #E7E5E4; padding:2rem; background:#fff; border-radius:0.5rem; max-height:600px; overflow-y:auto;">
+        <p style="color:#78716C; font-style:italic;">Loading preview...</p>
+    </div>
+</div>
+
+<script>
+  document.querySelectorAll('button[data-url]').forEach(btn =>
+    btn.addEventListener('click', () => {
+        const card = document.getElementById('report-preview-card');
+        card.style.display = 'flex';
+        card.scrollIntoView({ behavior: 'smooth' });
+
+        const dl = document.getElementById('download-report-btn');
+        dl.href = btn.dataset.url.replace('/preview/', '/report/');
+        dl.style.display = 'inline-flex';
+    })
+  );
+
+  lucide.createIcons();
+</script>
 {% endblock %}

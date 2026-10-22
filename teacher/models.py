@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from student.models import Subject, Schools
+from common.models import Subject, Schools
 
 
 class Teacher(models.Model):
@@ -25,19 +25,25 @@ class Student(models.Model):
         unique_together = ('exam_num', 'name', 'surname')
 
 
-class Test(models.Model):
-    test_id = models.AutoField(primary_key=True, editable=False)
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='teacher_tests')
+class Tests(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='teacher_tests')
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='teacher_tests', editable=False)
-    test_type = models.IntegerField(default=1)
-    test_description = models.CharField(max_length=255)
-    actual_mark = models.FloatField()
-    possible_mark = models.IntegerField()
-    weighted_mark = models.FloatField()
-    percentage = models.FloatField()
-    symbol = models.IntegerField()
-    submission_date = models.DateField()
+    type = models.IntegerField(default=1)
+    description = models.CharField(max_length=255)
+    total = models.IntegerField()
+    date = models.DateField()
 
     class Meta:
-        unique_together = ('subject', 'student', 'test_description')
+        unique_together = ('subject', 'teacher', 'description', 'total')
+
+
+class Marks(models.Model):
+    test       = models.ForeignKey(Tests, on_delete=models.CASCADE)
+    student    = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='marks', editable=False)
+    symbol     = models.IntegerField(default=1)
+    mark       = models.FloatField(default=0)
+    weighted   = models.FloatField(default=0)
+    percentage = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = ('test', 'student')

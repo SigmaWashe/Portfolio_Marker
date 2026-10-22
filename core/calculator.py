@@ -46,7 +46,7 @@ def assign_symbol(percentage: float, as_dict: bool = False) -> int | dict:
 
 
 #Generic calculator for all subjects.
-def calc_subject(subject_id: int, test_id: int, mark: float, total: int) -> tuple[float, float]:
+def calc_subject(subject_id: int, test_id: int, mark: float, total: float) -> tuple[float, float]:
     from core.subjects import SUBJECT_CHOICES
     percentage = calculate_percentage(mark, total)
     choices = SUBJECT_CHOICES.get(subject_id, {}).get('choices', [])  # ← add .get('choices', [])

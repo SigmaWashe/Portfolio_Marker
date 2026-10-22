@@ -6,6 +6,7 @@ from django.db.models import Avg, F, Prefetch
 
 from core.calculator import round_decimal
 from core.subjects import *
+from teacher.models import *
 
 def get_center_number(exam_num):
     exam_num_str = str(exam_num)
@@ -68,3 +69,30 @@ def test_type(subject_id, type_id):
         if str(choice['id']) == str(type_id): return choice['type']
     return None
 
+
+def student_average(student) -> float:
+    result = Marks.objects.filter(student=student).aggregate(average=Avg('percentage'))
+    average = result['average']
+    return round_decimal(average, 1)
+
+
+def subject_average(teacher):
+    result = Marks.objects.filter(test__teacher=teacher,).aggregate(average=Avg('percentage'))
+    average = result['average']
+    return round_decimal(average, 2)
+
+
+def test_average(teacher, test):
+    result = Marks.objects.filter(test__teacher=teacher, test=test).aggregate(average=Avg('percentage'))
+    average = result['average']
+    return round_decimal(average, 1)
+
+
+def teachers_students(teacher): return Student.objects.filter(school=teacher.school).order_by('surname', 'name')
+
+
+def teachers_tests(teacher): return Tests.objects.filter(teacher=teacher).order_by('-date')
+
+
+def student_marks(teacher):
+    return Marks.objects.filter(test__teacher=teacher).order_by('student__surname', 'student__name', '-test__date')
