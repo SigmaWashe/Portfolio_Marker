@@ -30,9 +30,9 @@
 </div>
 
 <div class="tabs">
-    <button class="tab active" onclick="switchTab('marks', this)">Marks</button>
-    <a href="{% url 'teacher:manage_tests' %}" class="btn-secondary"> Tests </a>
-    <a href="{% url 'teacher:students' %}" class="btn-secondary"> Students </a>
+    <a class="tab active" onclick="switchTab('marks', this)"> Marks </a>
+    <a class="tab" href="{% url 'teacher:manage_tests' %}"> Tests </a>
+    <a class="tab" href="{% url 'teacher:students' %}"> Students </a>
 </div>
 
 <div class="card">

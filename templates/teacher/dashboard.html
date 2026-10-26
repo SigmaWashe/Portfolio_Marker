@@ -32,7 +32,9 @@
     <div class="card">
         <div class="card-header">
             <span class="card-title">Student roster</span>
-            <span class="text-muted text-sm">{{ students|length }} student{{ students|length|pluralize }}</span>
+            <a title="Download all SBA cover sheets" href="{% url 'student:generate_all' %}" class="text-muted text-sm">
+                {{ students|length }} student{{ students|length|pluralize }}
+            </a>
         </div>
 
           {% if students %}

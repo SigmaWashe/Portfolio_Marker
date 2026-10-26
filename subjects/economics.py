@@ -1,14 +1,15 @@
 from core.constants import Economics
+from core.utils import n
 
 
 def build_data(g):
-    tests_perc = g._perc(Economics.CONTROLLED_TEST, 0) + g._perc(Economics.CONTROLLED_TEST, 1)
-    tests_weight = g._weighted(Economics.CONTROLLED_TEST, 0) + g._weighted(Economics.CONTROLLED_TEST, 1)
+    tests_perc = n(g._perc(Economics.CONTROLLED_TEST, 0)) + n(g._perc(Economics.CONTROLLED_TEST, 1))
+    tests_weight = n(g._weighted(Economics.CONTROLLED_TEST, 0)) + n(g._weighted(Economics.CONTROLLED_TEST, 1))
 
-    prelim_weight = g._weighted(Economics.PRELIM)
-    multi_weight = g._weighted(Economics.MULTIPLE_CHOICE)
-    task_weight = g._weighted(Economics.DATA_RESPONSE)
-    oral_weight = g._weighted(Economics.ORAL)
+    prelim_weight = n(g._weighted(Economics.PRELIM))
+    multi_weight = n(g._weighted(Economics.MULTIPLE_CHOICE))
+    task_weight = n(g._weighted(Economics.DATA_RESPONSE))
+    oral_weight = n(g._weighted(Economics.ORAL))
 
 
     return{

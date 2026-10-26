@@ -26,45 +26,46 @@
             <div class="sidebar-logo-text">Portfolio Marker</div>
         </div>
 
-        <div class="nav-section">Menu</div>
-        <a href="{% url 'teacher:dashboard' %}" class="nav-item {% if current == 'dashboard' %}active{% endif %}">
+        <div class="nav-item">
+            <span>Menu</span>
+        </div>
+        <a title="Dashboard" href="{% url 'teacher:dashboard' %}" class="nav-item {% if current == 'dashboard' %}active{% endif %}">
             <i data-lucide="layout-dashboard" width="22" height="22"></i>
             <span class="nav-label">Dashboard</span>
         </a>
-        <a href="{% url 'teacher:manage_tests' %}" class="nav-item {% if current == 'manage_tests' %}active{% endif %}">
-            <i data-lucide="notebook-pen" width="22" height="22"></i>
-            <span class="nav-label">Tests</span>
-        </a>
-        <a href="{% url 'teacher:manage_marks' %}" class="nav-item {% if current == 'manage_marks' %}active{% endif %}">
+        <a title="Marks" href="{% url 'teacher:manage_marks' %}" class="nav-item {% if current == 'manage_marks' %}active{% endif %}">
             <i data-lucide="book-open-check" width="22" height="22"></i>
             <span class="nav-label">Marks</span>
         </a>
-        <a href="{% url 'teacher:students' %}" class="nav-item {% if current == 'students' %}active{% endif %}">
+        <a title="Tests" href="{% url 'teacher:manage_tests' %}" class="nav-item {% if current == 'manage_tests' %}active{% endif %}">
+            <i data-lucide="notebook-pen" width="22" height="22"></i>
+            <span class="nav-label">Tests</span>
+        </a>
+        <a title="Students" href="{% url 'teacher:students' %}" class="nav-item {% if current == 'students' %}active{% endif %}">
             <i data-lucide="users" width="22" height="22"></i>
             <span class="nav-label">Students</span>
         </a>
 
         <div class="sidebar-bottom">
-            {% if request.user.is_authenticated %}
             <div class="nav-item" style="pointer-events:none; gap:10px;">
                 <div class="avatar" style="width:28px;height:28px;font-size:11px;flex-shrink:0;">
-                    {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+                    {{ teacher.name|first|upper }}{{ teacher.surname|first|upper }}
                 </div>
                 <div style="overflow:hidden;">
-                    <div style="font-size:12px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ request.user.get_full_name }}</div>
-                    {% if request.user.teacher.subject %}
-                    <div style="font-size:11px;color:#93B8D8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ request.user.teacher.subject.subject }}</div>
+                    <span class="nav-label" style="font-size:12px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {{ teacher.name|capfirst }} {{ teacher.surname|capfirst }}
+                    </span>
+                    {% if teacher.subject %}
+                    <span class="nav-label" style="font-size:11px;color:#93B8D8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {{ teacher.subject.subject }}
+                    </span>
                     {% endif %}
                 </div>
             </div>
-            {% endif %}
-            <form method="post" action="{% url 'teacher:logout' %}" style="margin:0">
-                {% csrf_token %}
-                <button type="submit" class="nav-item" style="width:100%;background:none;border:none;cursor:pointer;font-family:inherit;">
-                    <i data-lucide="log-out" width="16" height="16"></i>
-                    <span class="nav-label">Log out</span>
-                </button>
-            </form>
+            <a title="Log out" href="{% url 'teacher:logout' %}" class="nav-item">
+                <i data-lucide="log-out" width="16" height="16"></i>
+                <span class="nav-label">Log out</span>
+            </a>
         </div>
     </aside>
 

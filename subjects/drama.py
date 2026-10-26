@@ -1,28 +1,29 @@
 from core.constants import DramaticArts
+from core.utils import n
 
 def build_data(g):
 
-    prac1 = g._weighted(DramaticArts.PRACTICAL, 0)
-    prac2 = g._weighted(DramaticArts.PRACTICAL, 1)
-    prac3 = g._weighted(DramaticArts.PRACTICAL, 2)
-    prac  = g._mark(DramaticArts.PRACTICAL, 0) + g._mark(DramaticArts.PRACTICAL, 1) + g._mark(DramaticArts.PRACTICAL, 2)
+    prac1 = n(g._weighted(DramaticArts.PRACTICAL, 0))
+    prac2 = n(g._weighted(DramaticArts.PRACTICAL, 1))
+    prac3 = n(g._weighted(DramaticArts.PRACTICAL, 2))
+    prac  = n(g._mark(DramaticArts.PRACTICAL, 0)) + n(g._mark(DramaticArts.PRACTICAL, 1)) + n(g._mark(DramaticArts.PRACTICAL, 2))
 
-    theory1 = g._weighted(DramaticArts.THEORY, 0)
-    theory2 = g._weighted(DramaticArts.THEORY, 1)
-    theory3 = g._weighted(DramaticArts.THEORY, 2)
-    prelim = g._weighted(DramaticArts.PRELIM)
-    theory = g._mark(DramaticArts.THEORY, 0) + g._mark(DramaticArts.THEORY, 1) + g._mark(DramaticArts.THEORY, 2) + g._mark(DramaticArts.PRELIM)
+    theory1 = n(g._weighted(DramaticArts.THEORY, 0))
+    theory2 = n(g._weighted(DramaticArts.THEORY, 1))
+    theory3 = n(g._weighted(DramaticArts.THEORY, 2))
+    prelim = n(g._weighted(DramaticArts.PRELIM))
+    theory = n(g._mark(DramaticArts.THEORY, 0)) + n(g._mark(DramaticArts.THEORY, 1)) + n(g._mark(DramaticArts.THEORY, 2)) + n(g._mark(DramaticArts.PRELIM))
 
-    pat_A  = g._weighted(DramaticArts.PAT_SECTION_A)
-    pat_B  = g._weighted(DramaticArts.PAT_SECTION_B)
+    pat_A  = n(g._weighted(DramaticArts.PAT_SECTION_A))
+    pat_B  = n(g._weighted(DramaticArts.PAT_SECTION_B))
 
-    exam = f"{g.student.exam_num} "
+    exam_num = f"{g.student.exam_num} "
 
     return {
         "{NAME}": g.student.name, "{SURNAME}": g.student.surname, "{SCHOOL}": getattr(g.student, 'school', ''),
-        "{1}": exam[0],  "{2}": exam[1],  "{3}": exam[2],  "{4}": exam[3],
-        "{5}": exam[4],  "{6}": exam[5],  "{7}": exam[6],  "{8}": exam[7],
-        "{9}": exam[8],  "{10}": exam[9], "{11}": exam[10], "{12}": exam[11], "{13}": exam[12],
+        "{1}": exam_num[0], "{2}": exam_num[1], "{3}": exam_num[2], "{4}": exam_num[3],
+        "{5}": exam_num[4], "{6}": exam_num[5], "{7}": exam_num[6], "{8}": exam_num[7],
+        "{9}": exam_num[8], "{10}": exam_num[9], "{11}": exam_num[10], "{12}": exam_num[11], "{13}": exam_num[12],
 
         "{prac1_desc}": g._desc(DramaticArts.PRACTICAL, 0), "{prac1_mark}": g._mark(DramaticArts.PRACTICAL, 0),
         "{prac2_desc}": g._desc(DramaticArts.PRACTICAL, 1), "{prac2_mark}": g._mark(DramaticArts.PRACTICAL, 1),
@@ -39,6 +40,6 @@ def build_data(g):
 
         "{secA_desc}"   : g._desc(DramaticArts.PAT_SECTION_A), "{secA_mark}": g._mark(DramaticArts.PAT_SECTION_A),
         "{secB_desc}"   : g._desc(DramaticArts.PAT_SECTION_B), "{secB_mark}": g._mark(DramaticArts.PAT_SECTION_B),
-        "{pat_mark}"    : g._mark(DramaticArts.PAT_SECTION_A) + g._mark(DramaticArts.PAT_SECTION_B),
+        "{pat_mark}"    : n(g._mark(DramaticArts.PAT_SECTION_A)) + n(g._mark(DramaticArts.PAT_SECTION_B)),
         "{pat_weight}"  : pat_A + pat_B,
     }

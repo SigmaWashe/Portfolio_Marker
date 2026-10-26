@@ -1,3 +1,6 @@
 .env
 portofolio_db.sqlite3
 .venv
+/common/migrations
+/teacher/migrations
+/student/migrations

@@ -37,5 +37,5 @@ def build_data(g):
         "{prac_topic}": g._desc(AGM.PRACTICAL), "{prac_date}": g._date(AGM.PRACTICAL), "{prac_total}": g._total(AGM.PRACTICAL),
         "{prac_mark}": g._mark(AGM.PRACTICAL), "{prac_weight}": prac_weighted,
 
-        "{total}": prelim_weighted + t1_weighted + t2_weighted + management_weighted + oral_weighted + vis_weighted + prac_weighted,
+        "{total}": n(prelim_weighted) + n(t1_weighted) + n(t2_weighted) + n(management_weighted) + n(oral_weighted) + n(vis_weighted) + n(prac_weighted),
     }

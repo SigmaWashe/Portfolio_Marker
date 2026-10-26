@@ -1,5 +1,4 @@
-import io
-import zipfile
+import io, zipfile
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -9,7 +8,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.text import get_valid_filename
 
 from core.base import ReportGenerator, REPORT_TEMPLATES
-from core.subjects import REPORT_TEMPLATES
+from core.subjects import SUBJECT_CALC
 from teacher.forms import *
 from teacher.models import *
 
@@ -186,7 +185,7 @@ def manage_marks(request):
     tests      = teachers_tests(teacher)
     marks      = student_marks(teacher)
     students   = teachers_students(teacher)
-    calculator = SUBJECT_CALC.get(teacher.subject)
+    calculator = SUBJECT_CALC.get(teacher.subject.id)
 
     current_students = [
         {
@@ -288,7 +287,7 @@ def generate_all(request):
             if hasattr(pdf, 'getvalue'):
                 pdf = pdf.getvalue()
 
-            name = get_valid_filename(f"{student.surname}_{student.name}_{student.exam_num}.pdf")
+            name = get_valid_filename(f"{student.surname}_{student.name}_{subject.subject}.pdf")
             zf.writestr(name, pdf)
 
     response = HttpResponse(buffer.getvalue(), content_type='application/zip')

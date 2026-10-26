@@ -29,7 +29,9 @@
 <div class="card">
     <div class="card-header">
         <span class="card-title">Current Subjects</span>
-        <span class="text-muted text-sm">{{ current_subjects|length }} subject{{ current_subjects|length|pluralize }}</span>
+        <a title="Download all your SBA cover sheets" href="{% url 'student:generate_all' %}" class="text-muted text-sm">
+            {{ current_subjects|length }} subject{{ current_subjects|length|pluralize }}
+        </a>
     </div>
 
     {% if current_subjects %}
@@ -76,7 +78,7 @@
     {% else %}
     <div class="empty-state">
         <i data-lucide="user" width="22" height="22"></i>
-        <a href="{% url 'student:select_subjects' %}">You have not selected any subjects yet.</a>.
+        <a title="Select your subjects" href="{% url 'student:select_subjects' %}" class="text-muted text-sm">You have not selected any subjects yet.</a>.
     </div>
     {% endif %}
 </div>

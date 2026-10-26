@@ -1,5 +1,5 @@
 from core.constants import PhysicalSciences as Physics
-from core.utils import get_center_number
+from core.utils import get_center_number, n
 
 def build_data(g):
     exam_num = g.student.exam_num
@@ -24,6 +24,6 @@ def build_data(g):
         "{prelim2_date}": g._date(Physics.PRELIM_2), "{prelim2_total}": g._total(Physics.PRELIM_2), "{prelim2_mark}": g._mark(Physics.PRELIM_2),
         "{prelim2_perc}": g._perc(Physics.PRELIM_2), "{prelim2_weight}": g._weighted(Physics.PRELIM_2),
 
-        "{total}": g._weighted(Physics.PHYS_PRAC) + g._weighted(Physics.CHEM_PRAC) + g._weighted(Physics.PHYS_TEST) +
-                 g._weighted(Physics.CHEM_TEST) + g._weighted(Physics.PRELIM_1) + g._weighted(Physics.PRELIM_2),
+        "{total}": n(g._weighted(Physics.PHYS_PRAC)) + n(g._weighted(Physics.CHEM_PRAC)) + n(g._weighted(Physics.PHYS_TEST)) +
+                 n(g._weighted(Physics.CHEM_TEST)) + n(g._weighted(Physics.PRELIM_1)) + n(g._weighted(Physics.PRELIM_2)),
     }

@@ -89,7 +89,7 @@ body {
 
 /* ── Sidebar retracted ── */
 .sidebar.retracted {
-  width: 64px !important;
+  width: 75px !important;
 }
 
 .sidebar.retracted .sidebar-logo {

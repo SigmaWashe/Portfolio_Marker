@@ -33,5 +33,5 @@ def build_data(g):
         "{wp_topic}": g._desc(AGS.WRITING_PIECE), "{wp_date}": g._date(AGS.WRITING_PIECE), "{wp_total}": g._total(AGS.WRITING_PIECE),
         "{wp_mark}": g._mark(AGS.WRITING_PIECE), "{wp_weight}": wp_weighted,
 
-        "{total}": prelim_weighted + t1_weighted + t2_weighted + oral_weighted + vis_weighted + wp_weighted,
+        "{total}": n(prelim_weighted) + n(t1_weighted) + n(t2_weighted) + n(oral_weighted) + n(vis_weighted) + n(wp_weighted),
     }

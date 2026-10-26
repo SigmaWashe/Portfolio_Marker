@@ -1,27 +1,31 @@
-import datetime
-import json
+import datetime, io, zipfile
 
+from django.contrib.auth.forms import AuthenticationForm
 from django.db.models import Avg
 from django.forms import modelformset_factory
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.utils.text import get_valid_filename
 
-from common.models import Schools
-from core.subjects import *
 from core.base import ReportGenerator, REPORT_TEMPLATES
+from core.subjects import SUBJECT_CALC
 from core.utils import get_center_number
 from student.forms import *
+
 
 def signup(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save()
+            name = form.cleaned_data.get('name')
+            surname = form.cleaned_data.get('surname')
+
+            user.student.name = name.strip().capitalize()
+            user.student.surname = surname.strip().capitalize()
 
             center_number = get_center_number(user.student.exam_num)
             school = Schools.objects.filter(center_number=center_number).first()
@@ -30,10 +34,10 @@ def signup(request):
                 user.student.school = school.name_of_school
                 user.student.save()
 
-            # Student.subjects.set([9, 10, 15])
+            user.student.subjects.set([9, 10, 15])
 
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect('selected')
+            return redirect('select_subjects')
         else:
             print(" FORM ERRORS:", form.errors.as_data())
     else:
@@ -316,4 +320,34 @@ def generate_report(request, subject_name):
 
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+@login_required(login_url='student:login')
+def generate_all(request):
+    student = request.user.student
+    subjects = student.subjects.all()
+
+    if not subjects.exists():
+        return HttpResponse("No subjects to generate SBA cover sheets for.", status=400)
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for subject in subjects:
+            tests = Test.objects.filter(student=student, subject_id=subject.id)
+            gen = ReportGenerator(student, tests)
+
+            if not gen.has_template(subject.id):
+                return HttpResponse("No report template available for this subject yet.", status=400)
+
+            pdf = gen.generate_pdf(subject.id)
+            if hasattr(pdf, 'getvalue'): pdf = pdf.getvalue()
+
+            name = get_valid_filename(f"{student.surname}_{student.name}_{subject.subject}.pdf")
+            zf.writestr(name, pdf)
+            pass
+
+    response = HttpResponse(buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{get_valid_filename(
+                                      f"{student.surname}_{student.name}")}_reports.zip"'
     return response

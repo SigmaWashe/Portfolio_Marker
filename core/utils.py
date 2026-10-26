@@ -10,8 +10,6 @@ from teacher.models import *
 
 def get_center_number(exam_num):
     exam_num_str = str(exam_num)
-    # center_num = get_center_number(exam_num)
-    # school = Schools.objects.filter(center_num=center_num).first()
 
     if len(exam_num_str) == 12:   return int(str(exam_num_str).strip()[2:-6])
     elif len(exam_num_str) == 13: return int(str(exam_num_str).strip()[2:-7])
@@ -96,3 +94,6 @@ def teachers_tests(teacher): return Tests.objects.filter(teacher=teacher).order_
 
 def student_marks(teacher):
     return Marks.objects.filter(test__teacher=teacher).order_by('student__surname', 'student__name', '-test__date')
+
+
+def n(value): return value or 0

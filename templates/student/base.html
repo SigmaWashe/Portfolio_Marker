@@ -17,44 +17,48 @@
 <body>
 
 {% block body %}
+{% with current=request.resolver_match.url_name %}
 <div class="layout">
 
-      <!-- Desktop sidebar -->
+    <!-- Desktop sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo" onclick="toggleSidebar()">
             <div class="sidebar-logo-mark">PM</div>
             <div class="sidebar-logo-text">Portfolio Marker</div>
         </div>
 
-              <div class="nav-section">Menu</div>
-        <a href="{% url 'student:dashboard' %}" class="nav-item active">
+        <div class="nav-item">
+            <span>Menu</span>
+        </div>
+        <a href="{% url 'student:dashboard' %}" class="nav-item {% if current == 'dashboard' %}active{% endif %}">
             <i data-lucide="layout-dashboard" width="22" height="22"></i>
             <span class="nav-label">Dashboard</span>
         </a>
 
-              {% if current_subjects %}
-        <div class="nav-section">Subjects</div>
-        {% for subject in current_subjects %}
-        <a href="{% url 'student:subject' subject.name|slugify %}" class="nav-item" title="{{ subject.name }}">
-            <i data-lucide="{{ subject.icon }}" width="22" height="22"></i>
-            <span class="nav-label">{{ subject.name }}</span>
-        </a>
-        {% endfor %}
+        {% if current_subjects %}
+        <div class="nav-item"> <span>Subjects</span> </div>
+            {% for subject in current_subjects %}
+            {% url 'student:subject' subject.name|slugify as subject_url %}
+            <a href="{{ subject_url }}" class="nav-item {% if request.path == subject_url %}active{% endif %}" title="{{ subject.name }}">
+                <i data-lucide="{{ subject.icon }}" width="22" height="22"></i>
+                <span class="nav-label">{{ subject.name }}</span>
+            </a>
+            {% endfor %}
         {% endif %}
 
-              <div class="sidebar-bottom">
-                  <a href="{% url 'student:select_subjects' %}" class="nav-item">
-                      <i data-lucide="settings" width="16" height="16"></i>
-                      <span class="nav-label">Manage Subjects</span>
-                  </a>
-                  <a href="{% url 'student:logout' %}" class="nav-item">
-                      <i data-lucide="log-out" width="16" height="16"></i>
-                      <span class="nav-label">Log out</span>
-                  </a>
-              </div>
+        <div class="sidebar-bottom">
+            <a href="{% url 'student:select_subjects' %}" class="nav-item {% if current == 'select_subjects' %}active{% endif %}" >
+                <i data-lucide="settings" width="16" height="16"></i>
+                <span class="nav-label">Manage Subjects</span>
+            </a>
+            <a href="{% url 'student:logout' %}" class="nav-item">
+                <i data-lucide="log-out" width="16" height="16"></i>
+                <span class="nav-label">Log out</span>
+            </a>
+        </div>
     </aside>
 
-      <!-- Main content -->
+    <!-- Main content -->
     <main class="main">
         {% if messages %}
         {% for msg in messages %}
@@ -88,7 +92,32 @@
         </a>
     </nav>
 </div>
+{% endwith %}
 {% endblock %}
+
+<!-- Alerts -->
+<style>
+    .alert { padding: 0.65rem 1rem; border-radius: 0.6rem; font-size: 0.875rem; margin-bottom: 1rem; }
+    .alert-success { background: #e6f4ef; color: #1b7f5c; }
+    .alert-error   { background: #faeaea; color: #b13535; }
+    .avatar {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: rgba(255,255,255,0.18);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    .layout  { display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
+    .sidebar { height: 100%; overflow-y: auto; flex-shrink: 0; gap: 0.5rem; }
+    .main    { flex: 1; min-width: 0; height: 100%; overflow-y: auto; }
+
+    /* Sidebar spacing */
+    .sidebar-logo   { margin-bottom: 2.5rem; }
+    .nav-section    { padding: 1.25rem 0.75rem 0.4rem; }
+    .nav-item       { padding: 0.7rem 0.75rem; }
+    .sidebar-bottom { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1rem; }
+    .sidebar.retracted .nav-item { padding: 0.7rem 0; }
+</style>
 
 <script src="{% static 'main.js' %}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -96,9 +125,12 @@
 <script>
     lucide.createIcons();
 
-      function toggleSidebar() {
-          document.getElementById('sidebar').classList.toggle('retracted');
-            }
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('retracted');
+    }
+
+    function sidebarText(){
+    }
 </script>
 </body>
 </html>

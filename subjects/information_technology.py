@@ -1,4 +1,4 @@
-from core.utils import get_center_number
+from core.utils import get_center_number, n
 from core.constants import IT
 
 
@@ -13,6 +13,6 @@ def build_data(g):
         "{alt_desc}": g._desc(IT.ALT), "{alt_weight}": g._weighted(IT.ALT),
         "{prelim1_desc}": g._desc(IT.PRELIM_THEORY), "{prelim1_weight}": g._weighted(IT.PRELIM_THEORY),
         "{prelim2_desc}": g._desc(IT.PRELIM_PRAC), "{prelim2_weight}": g._weighted(IT.PRELIM_PRAC),
-        "{sba_mark}": g._weighted(IT.PAT) + g._weighted(IT.THEORY) + g._weighted(IT.PRAC) + g._weighted(IT.ALT) +
-                    g._weighted(IT.PRELIM_THEORY) + g._weighted(IT.PRELIM_PRAC),
+        "{sba_mark}": n(g._weighted(IT.PAT)) + n(g._weighted(IT.THEORY)) + n(g._weighted(IT.PRAC)) + n(g._weighted(IT.ALT)) +
+                    n(g._weighted(IT.PRELIM_THEORY)) + n(g._weighted(IT.PRELIM_PRAC)),
     }

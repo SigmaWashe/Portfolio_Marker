@@ -1,13 +1,14 @@
 from core.constants import Accounting
+from core.utils import n
 
 
 def build_data(g):
-    prelim1 = g._weighted(Accounting.PRELIM_PAPER_1)
-    prelim2 = g._weighted(Accounting.PRELIM_PAPER_2)
-    test1 = g._weighted(Accounting.TEST, 0)
-    test2 = g._weighted(Accounting.TEST, 1)
-    test3 = g._weighted(Accounting.TEST, 2)
-    choice_assessment = g._weighted(Accounting.CHOICE_ASSESSMENT_TASK)
+    prelim1 = n(g._weighted(Accounting.PRELIM_PAPER_1))
+    prelim2 = n(g._weighted(Accounting.PRELIM_PAPER_2))
+    test1 = n(g._weighted(Accounting.TEST, 0))
+    test2 = n(g._weighted(Accounting.TEST, 1))
+    test3 = n(g._weighted(Accounting.TEST, 2))
+    choice_assessment = n(g._weighted(Accounting.CHOICE_ASSESSMENT_TASK))
 
     return {
         "{NAME}": g.student.name, "{SURNAME}": g.student.surname, "{EXAM_NUM}": str(g.student.exam_num), "{SCHOOL}": g.student.school,

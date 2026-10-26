@@ -17,9 +17,9 @@
 </div>
 
 <div class="tabs">
-    <a href="{% url 'teacher:manage_marks' %}" class="btn-secondary"> Marks </a>
-    <button class="tab active" onclick="switchTab('tests', this)">Tests</button>
-    <a href="{% url 'teacher:students' %}" class="btn-secondary"> Students </a>
+    <a class="tab" href="{% url 'teacher:manage_marks' %}"> Marks </a>
+    <a class="tab active" onclick="switchTab('tests', this)"> Tests </a>
+    <a class="tab" href="{% url 'teacher:students' %}"> Students </a>
 </div>
 
 <div class="tab-panel active" id="tab-tests">

@@ -1,6 +1,6 @@
 from core.calculator import round_decimal
 from core.constants import CAT
-from core.utils import get_center_number
+from core.utils import get_center_number, n
 
 
 def build_data(subject):
@@ -21,8 +21,8 @@ def build_data(subject):
     prelim2_weighted = subject._weighted(CAT.PRELIM_2)
     pat_weighted = subject._weighted(CAT.PAT)
 
-    sba_total = round_decimal(theory_weighted + prac_weighted + alt_weighted + prelim1_weighted + prelim2_weighted, 2)
-    total = round_decimal(sba_total + pat_weighted, 2)
+    sba_total = round_decimal(n(theory_weighted) + n(prac_weighted) + n(alt_weighted) + n(prelim1_weighted) + n(prelim2_weighted), 2)
+    total = round_decimal(sba_total + n(pat_weighted), 2)
 
     exam = subject.student.exam_num
 

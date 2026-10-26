@@ -1,22 +1,23 @@
 from core.calculator import round_decimal
 from core.constants import Geography
+from core.utils import n
 
 
 def build_data(g):
 
-    research_weighted = g._weighted(Geography.RESEARCH)
-    tests_weighted = g._weighted(Geography.TEST, 0) + g._weighted(Geography.TEST, 1)
-    tasks_weighted = g._weighted(Geography.TASK, 0) + g._weighted(Geography.TASK, 1) + g._weighted(Geography.TASK, 2)
-    prelim_weighted = g._weighted(Geography.PRELIM_PAPER_1) + g._weighted(Geography.PRELIM_PAPER_2)
+    research_weighted = n(g._weighted(Geography.RESEARCH))
+    tests_weighted = n(g._weighted(Geography.TEST, 0)) + n(g._weighted(Geography.TEST, 1))
+    tasks_weighted = n(g._weighted(Geography.TASK, 0)) + n(g._weighted(Geography.TASK, 1)) + n(g._weighted(Geography.TASK, 2))
+    prelim_weighted = n(g._weighted(Geography.PRELIM_PAPER_1)) + n(g._weighted(Geography.PRELIM_PAPER_2))
     total = tests_weighted + tasks_weighted + prelim_weighted + research_weighted
 
-    exam = f"{g.student.exam_num} "
+    exam_num = f"{g.student.exam_num} "
 
     return {
         "{NAME}": g.student.name, "{SURNAME}": g.student.surname,
-        "{1}": exam[0],  "{2}": exam[1],  "{3}": exam[2],  "{4}": exam[3],
-        "{5}": exam[4],  "{6}": exam[5],  "{7}": exam[6],  "{8}": exam[7],
-        "{9}": exam[8],  "{10}": exam[9], "{11}": exam[10], "{12}": exam[11], "{13}": exam[12],
+        "{1}": exam_num[0], "{2}": exam_num[1], "{3}": exam_num[2], "{4}": exam_num[3],
+        "{5}": exam_num[4], "{6}": exam_num[5], "{7}": exam_num[6], "{8}": exam_num[7],
+        "{9}": exam_num[8], "{10}": exam_num[9], "{11}": exam_num[10], "{12}": exam_num[11], "{13}": exam_num[12],
 
         "{test1_date}": g._date(Geography.TEST), "{test1_mark}": g._mark(Geography.TEST, 0),
         "{test1_weight}": g._weighted(Geography.TEST, 0), "{test1_total}": g._total(Geography.TEST, 0),
@@ -37,7 +38,7 @@ def build_data(g):
 
         "{prelim1_date}": g._date(Geography.PRELIM_PAPER_1), "{prelim1_mark}": g._mark(Geography.PRELIM_PAPER_1),
         "{prelim2_date}": g._date(Geography.PRELIM_PAPER_2), "{prelim2_mark}": g._mark(Geography.PRELIM_PAPER_2),
-        "{prelim_weight}": prelim_weighted, "{prelim_mark}": g._mark(Geography.PRELIM_PAPER_1) + g._mark(Geography.PRELIM_PAPER_2),
+        "{prelim_weight}": prelim_weighted, "{prelim_mark}": n(g._mark(Geography.PRELIM_PAPER_1)) + n(g._mark(Geography.PRELIM_PAPER_2)),
 
         "{proj_date}": g._date(Geography.RESEARCH), "{proj_mark}": g._mark(Geography.RESEARCH),
         "{proj_weight}": research_weighted,

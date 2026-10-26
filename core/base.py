@@ -171,3 +171,5 @@ class ReportGenerator:
 
             with open(pdf_path, 'rb') as f:
                 return io.BytesIO(f.read())
+
+

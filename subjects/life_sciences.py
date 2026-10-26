@@ -1,6 +1,6 @@
 from core.calculator import round_decimal, calculate_percentage
 from core.constants import LifeSciences
-from core.utils import get_center_number
+from core.utils import get_center_number, n
 
 # All four optional test types, in the order they appear in the template
 OPTIONAL_TYPES = [
@@ -21,13 +21,13 @@ BLANK = ("", "", "", "", "")
 
 
 def build_data(g):
-    prelim1_mark  = g._mark(LifeSciences.PRELIM_PAPER_1)
-    prelim2_mark  = g._mark(LifeSciences.PRELIM_PAPER_2)
+    prelim1_mark  = n(g._mark(LifeSciences.PRELIM_PAPER_1))
+    prelim2_mark  = n(g._mark(LifeSciences.PRELIM_PAPER_2))
     prelims_mark  = prelim1_mark + prelim2_mark
     prelims_weight = calculate_percentage(prelims_mark, 300) * 0.25
 
     # Pick the two optional types with the highest weighted mark
-    weighted_scores = [(test_type, g._weighted(test_type)) for test_type in OPTIONAL_TYPES]
+    weighted_scores = [(test_type, n(g._weighted(test_type))) for test_type in OPTIONAL_TYPES]
     weighted_scores.sort(key=lambda x: x[1], reverse=True)
     chosen = {t for t, _ in weighted_scores[:2]}
 
@@ -62,9 +62,9 @@ def build_data(g):
         if test_type in chosen:
             data[topic_k] = g._desc(test_type)
             data[date_k] = g._date(test_type)
-            data[mark_k] = round_decimal(g._mark(test_type), 2)
+            data[mark_k] = g._mark(test_type) and round_decimal(g._mark(test_type), 2)
             data[total_k] = g._total(test_type)
-            data[weight_k] = round_decimal(g._weighted(test_type), 2)
+            data[weight_k] = g._weighted(test_type) and round_decimal(g._weighted(test_type), 2)
         else:
             data[topic_k] = ""
             data[date_k] = ""
@@ -73,6 +73,6 @@ def build_data(g):
             data[weight_k] = ""
 
     chosen_weighted = sum(w for t, w in weighted_scores[:2])
-    data["{total}"] = g._weighted(LifeSciences.TEST, 0) + g._weighted(LifeSciences.TEST, 1) + g._weighted(LifeSciences.PRAC) + prelims_weight + chosen_weighted
+    data["{total}"] = n(g._weighted(LifeSciences.TEST, 0)) + n(g._weighted(LifeSciences.TEST, 1)) + n(g._weighted(LifeSciences.PRAC)) + prelims_weight + chosen_weighted
 
     return data

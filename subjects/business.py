@@ -1,5 +1,6 @@
 from core.calculator import assign_symbol
 from core.constants import Business
+from core.utils import n
 
 
 def build_data(g):
@@ -27,7 +28,7 @@ def build_data(g):
     sc_weighted  = g._weighted(Business.SECTION_C)
     p_weighted   = g._weighted(Business.PRELIM)
 
-    total_weighted = t1_weighted + t2_weighted + sab_weighted + sc_weighted + p_weighted
+    total_weighted = n(t1_weighted) + n(t2_weighted) + n(sab_weighted) + n(sc_weighted) + n(p_weighted)
 
     return {
         "{NAME}":    g.student.name,   "{SURNAME}":     g.student.surname,
@@ -36,27 +37,27 @@ def build_data(g):
         "{task1_desc}":     g._desc(Business.TASK, 0, 'Task 1'),
         "{task1_mark}":     t1_mark,  "{task1_total}":    t1_tot,
         "{task1_perc}":     t1_perc,
-        "{task1_weighted}": t1_weighted, "{task1_sym}": assign_symbol(t1_perc),
+        "{task1_weighted}": t1_weighted, "{task1_sym}": assign_symbol(n(t1_perc)),
 
         "{task2_desc}":     g._desc(Business.TASK, 1, 'Task 2'),
         "{task2_mark}":     t2_mark,  "{task2_total}":    t2_tot,
         "{task2_perc}":     t2_perc,
-        "{task2_weighted}": t2_weighted, "{task2_sym}": assign_symbol(t2_perc),
+        "{task2_weighted}": t2_weighted, "{task2_sym}": assign_symbol(n(t2_perc)),
 
         "{secAB_desc}":     g._desc(Business.SECTION_AB, default='Section A and B Test'),
         "{secAB_mark}":     secAB_mark, "{secAB_total}":  sab_tot,
         "{secAB_perc}":     sab_perc,
-        "{secAB_weighted}": sab_weighted, "{secAB_sym}": assign_symbol(sab_perc),
+        "{secAB_weighted}": sab_weighted, "{secAB_sym}": assign_symbol(n(sab_perc)),
 
         "{secC_desc}":      g._desc(Business.SECTION_C, default='Section C Test'),
         "{secC_mark}":      secC_mark,  "{secC_total}":   sc_tot,
         "{secC_perc}":      sc_perc,
-        "{secC_weighted}":  sc_weighted, "{secC_sym}": assign_symbol(sc_perc),
+        "{secC_weighted}":  sc_weighted, "{secC_sym}": assign_symbol(n(sc_perc)),
 
         "{prelim_desc}":        g._desc(Business.PRELIM, default='Preliminary Examination'),
         "{prelim_mark}":        prelim_mark, "{prelim_total}": p_tot,
         "{prelim_perc}":        p_perc,
-        "{prelim_weighted}":    p_weighted, "{prelim_sym}": assign_symbol(p_perc),
+        "{prelim_weighted}":    p_weighted, "{prelim_sym}": assign_symbol(n(p_perc)),
 
-        "{total_weighted}": total_weighted, "{total_sym}": assign_symbol(total_weighted),
+        "{total_weighted}": total_weighted, "{total_sym}": assign_symbol(n(total_weighted)),
     }
